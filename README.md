@@ -37,9 +37,7 @@ Communicates with the Redis service to store and retrieve user-post and post-pho
             PUT: Update a post (token required).
             DELETE: Delete a post (token required).
         /api/posts/{postId}/likes/
-            GET: Get total likes of the post.
-            POST: Like a post (token required).
-            DELETE: Unlike a post (token required).
+            POST: Like a post (token required) if user didn't like the post and unlike the post if user already liked the post
         /api/posts/{postId}/comments/
             GET: Retrieve all comments of a post.
             POST: Comment on a post (token required).
