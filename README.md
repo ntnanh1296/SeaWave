@@ -51,6 +51,7 @@ Communicates with the Redis service to store and retrieve user-post and post-pho
         Use Firebase storage to save photos of posts.
         Use Realtime database to save text content of posts.
         
+        
 3. Follow Service (Django App):
 
 Manages user connections, followers, and following relationships.

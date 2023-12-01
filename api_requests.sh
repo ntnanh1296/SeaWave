@@ -29,4 +29,8 @@ curl -X POST -H "Content-Type: application/json" -d '{"email": "user2@gmail.com"
 curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDAyNTQ0LCJpYXQiOjE3MDEzOTg5NDQsImp0aSI6ImEwZWRlYTVjZjkwMTQwOGQ5ODk4YTIzMzQ3YTgwOWNjIiwidXNlcl9pZCI6MX0.UIEJUHNNxtI-h95644uclI46bpIEO60qdcLw0TuRKCk" http://localhost:8000/api/users/4/
 
 
-curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDAyNTQ0LCJpYXQiOjE3MDEzOTg5NDQsImp0aSI6ImEwZWRlYTVjZjkwMTQwOGQ5ODk4YTIzMzQ3YTgwOWNjIiwidXNlcl9pZCI6MX0.UIEJUHNNxtI-h95644uclI46bpIEO60qdcLw0TuRKCk" -d '{"username": "new_username", "email": "new_email@example.com", "gender": "new_gender", "birthday": "new_birthday"}' http://localhost:8000/api/users/2/
+curl -X PUT -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDMxMTczLCJpYXQiOjE3MDE0MDIzNzMsImp0aSI6IjEwMTlhZDg0NzY0NDRmZmI5NDVhNzMzNDE0NGZlYTEwIiwidXNlcl9pZCI6MX0.X4mzKD0ie6ojAAuyh9lrDgOV_G26EcC3a4q0_qF_tkk" -d '{"username": "new_username", "email": "new_email@example.com", "gender": "new_gender", "birthday": "new_birthday"}' http://localhost:8000/api/users/2/
+
+
+
+curl -X DELETE -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDMxMTczLCJpYXQiOjE3MDE0MDIzNzMsImp0aSI6IjEwMTlhZDg0NzY0NDRmZmI5NDVhNzMzNDE0NGZlYTEwIiwidXNlcl9pZCI6MX0.X4mzKD0ie6ojAAuyh9lrDgOV_G26EcC3a4q0_qF_tkk" http://localhost:8000/api/users/3/
