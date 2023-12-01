@@ -23,6 +23,28 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def put(self, request, *args, **kwargs):
+        user = self.get_object()
+
+        # Check if the user making the request is the same as the user being updated
+        if request.user.id != user.id:
+            return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        user = self.get_object()
+
+        # Check if the user making the request is the same as the user being deleted
+        if request.user.id != user.id:
+            return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
+
+        user.delete()
+        return Response({'detail': 'User deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
 class LoginAPIView(APIView):
     queryset = CustomUser.objects.all()
     serializer_class = LoginSerializer
@@ -36,6 +58,7 @@ class LoginAPIView(APIView):
 
         try:
             user = CustomUser.objects.get(username=username)
+            print(user)
         except CustomUser.DoesNotExist:
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
