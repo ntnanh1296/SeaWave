@@ -63,27 +63,44 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         return Response({'detail': 'Post deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
+
 class LikeListView(generics.ListCreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-        # Update Redis mapping for post-likes
-        redis_conn = get_redis_connection()
-        redis_conn.sadd(f'post_likes:{serializer.instance.post.id}', serializer.instance.id)
+    def post(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('post_id')
+        print(post_id)
+        user = request.user
+
+        existing_like = Like.objects.filter(post=post_id, user=user).first()
+
+        if existing_like:
+
+            redis_conn = get_redis_connection()
+            redis_conn.srem(f'post_likes:{post_id}', existing_like.id)
+            existing_like.delete()
+
+            post = Post.objects.get(id=post_id)
+            post.save()
+            return Response({'detail': 'Post unliked successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            post = get_object_or_404(Post, pk=post_id)
+            serializer = self.get_serializer(data={'post': post.id, 'user': user.id})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            redis_conn = get_redis_connection()
+            redis_conn.sadd(f'post_likes:{post_id}', serializer.instance.id)
+            post = Post.objects.get(id=post_id)
+            post.save()
+            
+            return Response({'detail': 'Post liked successfully.'}, status=status.HTTP_201_CREATED)
 
 class LikeDetailView(generics.RetrieveDestroyAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
-
-    def perform_destroy(self, instance):
-        # Remove from Redis mapping for post-likes
-        redis_conn = get_redis_connection()
-        redis_conn.srem(f'post_likes:{instance.post.id}', instance.id)
-        instance.delete()
 
 class CommentListCreateView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
