@@ -34,7 +34,7 @@ curl -X DELETE -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey
 
 ##### Create new post ####
 curl --location 'http://localhost:8000/api/posts/' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDQ4MDE1LCJpYXQiOjE3MDE0MTkyMTUsImp0aSI6ImUyYTU1OWRiOTQxYzRlNWJhYTE1ZThlZTUwYzdiZjI3IiwidXNlcl9pZCI6M30.vyg0fRPEi25auE6S5az3zhc3w8kXW8P3_4luqXtdOF0' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNTAyNDc1LCJpYXQiOjE3MDE0NzM2NzUsImp0aSI6ImJiMzEzZTM2MjFiNjQyZGQ5NDk2ZmExNzllYjc5MGRjIiwidXNlcl9pZCI6MX0.9qK05LuiYlV24XuOQ9YTW1QvYSlti2wXhloYBxZ_0XE' \
 --form 'text="dasdfafdaf"' \
 --form 'photo=@"/home/ntnanh/Pictures/Screenshot from 2023-11-23 15-39-39.png"'
 
@@ -47,7 +47,7 @@ curl --location --request PUT 'http://localhost:8000/api/posts/1/' \
 
 ##### Get the post ####
 curl --location 'http://localhost:8000/api/posts/1/' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDQ4MDE1LCJpYXQiOjE3MDE0MTkyMTUsImp0aSI6ImUyYTU1OWRiOTQxYzRlNWJhYTE1ZThlZTUwYzdiZjI3IiwidXNlcl9pZCI6M30.vyg0fRPEi25auE6S5az3zhc3w8kXW8P3_4luqXtdOF0'
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNTMxOTUyLCJpYXQiOjE3MDE1MDMxNTIsImp0aSI6IjI4YmMzMDBmOGExMTQ0M2M4ODhkM2NmYzk5NDEzOTk5IiwidXNlcl9pZCI6MX0.dw10y0R8Az2YCJbvaPGySycAsgqEiNi09BLQG1O1ra8'
 
 ##### Get all post ####
 curl --location 'http://localhost:8000/api/posts/' \
@@ -58,4 +58,15 @@ curl --location --request DELETE 'http://localhost:8000/api/posts/1/' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDQ4MDE1LCJpYXQiOjE3MDE0MTkyMTUsImp0aSI6ImUyYTU1OWRiOTQxYzRlNWJhYTE1ZThlZTUwYzdiZjI3IiwidXNlcl9pZCI6M30.vyg0fRPEi25auE6S5az3zhc3w8kXW8P3_4luqXtdOF0'
 
 ##### Like a post ####
-curl -X POST -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDUzMjIyLCJpYXQiOjE3MDE0MjQ0MjIsImp0aSI6ImI1YjNhZjk5NWM1ZTQ2ZmJiZWUwMzUwZjQ2YTcwZGI3IiwidXNlcl9pZCI6Mn0.B576mpN-OnmKwAH53JdEEjNVrlNDVd8K6zxuNCqS2sY" http://localhost:8000/api/posts/1/likes/
+curl -X POST -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNTMxOTUyLCJpYXQiOjE3MDE1MDMxNTIsImp0aSI6IjI4YmMzMDBmOGExMTQ0M2M4ODhkM2NmYzk5NDEzOTk5IiwidXNlcl9pZCI6MX0.dw10y0R8Az2YCJbvaPGySycAsgqEiNi09BLQG1O1ra8" http://localhost:8000/api/posts/1/likes/
+
+
+
+###### Create new comment ######
+
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+-d '{"text": "This is a new comment on the post."}' \
+http://localhost:8000/api/posts/{postId}/comments/
+
+
+
