@@ -107,25 +107,51 @@ class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-        # Update Redis mapping for post-comments
+    def post(self, request, *args, **kwargs):
+        post_id = self.kwargs.get('post_id')
+        user = request.user
+        text = request.data.get('text')
+
+        serializer = self.get_serializer(data={'text': text, 'user': user.id, 'post': post_id})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
         redis_conn = get_redis_connection()
-        redis_conn.sadd(f'post_comments:{serializer.instance.post.id}', serializer.instance.id)
+        redis_conn.sadd(f'post_comments:{post_id}', serializer.instance.id)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CommentDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_update(self, serializer):
+    def put(self, request, *args, **kwargs):
+        # Get user from request and post_id from URL
+        user = self.request.user
+        post_id = self.kwargs.get('post_id')
+
+        instance = self.get_object()
+        request.data['user'] = user.id
+        request.data['post'] = post_id
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
         serializer.save()
+
         # Update Redis mapping for post-comments
         redis_conn = get_redis_connection()
-        redis_conn.sadd(f'post_comments:{serializer.instance.post.id}', serializer.instance.id)
+        redis_conn.sadd(f'post_comments:{post_id}', serializer.instance.id)
 
-    def perform_destroy(self, instance):
+        return Response(serializer.data)
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+
         # Remove from Redis mapping for post-comments
         redis_conn = get_redis_connection()
         redis_conn.srem(f'post_comments:{instance.post.id}', instance.id)
-        instance.delete()
+
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
