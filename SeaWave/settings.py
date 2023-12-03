@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'user_service',
     'post_service',
+    'follow_service',
 ]
 
 MIDDLEWARE = [

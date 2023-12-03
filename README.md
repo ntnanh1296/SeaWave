@@ -57,12 +57,12 @@ Manages user connections, followers, and following relationships.
     API Endpoints:
 
     /api/followers/
-        GET: Retrieve all users followed by you.
+        GET: Retrieve all users followed by you. count the followers
     /api/following/
-        GET: Get all users whom you followed.
+        GET: Get all users whom you followed, count the users followed
+
     /api/following/users/{userID}/
-        POST: Follow a userID.
-        DELETE: Unfollow a userID.
+        POST: Follow a userID. if you not follow them and unfollow a userID if you follow them 
 
     Database: PostgreSQL for managing user connections.
 
