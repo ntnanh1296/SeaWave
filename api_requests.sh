@@ -64,9 +64,9 @@ curl -X POST -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0
 
 ###### Create new comment ######
 
-curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNTMxOTUyLCJpYXQiOjE3MDE1MDMxNTIsImp0aSI6IjI4YmMzMDBmOGExMTQ0M2M4ODhkM2NmYzk5NDEzOTk5IiwidXNlcl9pZCI6MX0.dw10y0R8Az2YCJbvaPGySycAsgqEiNi09BLQG1O1ra8" \
 -d '{"text": "This is a new comment on the post."}' \
-http://localhost:8000/api/posts/{postId}/comments/
+http://localhost:8000/api/posts/1/comments/
 
 
 
