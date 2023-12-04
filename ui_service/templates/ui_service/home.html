@@ -1,0 +1,64 @@
+<!-- app_main/templates/app_main/home.html -->
+{% extends 'ui_service/base.html' %}
+
+<!-- {% block title %}Home - Moonland{% endblock %} -->
+
+{% block content %}
+    {% if user.is_authenticated %}
+    <div class="post-creation-container">
+        <form class="create-post-form" method="post" action="{% url 'create-post' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label for="post_text">Create New Post:</label>
+                <textarea id="post_text" name="text" id="id_text" required></textarea>
+            </p>
+            <p>
+                <label for="id_media">Media:</label>
+                <input type="file" name="media" id="id_media">
+            </p>
+            <div id="media-preview"></div>
+            <input type="submit" value="Create Post">
+        </form>
+    </div>
+    {% for post in posts %}
+        <div class="post-container">
+        <div class="post">
+            <p>Author: {{ post.author }} | Created at: {{ post.created_at }}</p>
+            <a href="{% url 'post-detail' post.pk %}" class="post-link">
+            <p>{{ post.text }}</p>
+            {% if post.media_url %}
+                <p>{{post.media_url}} </p>
+                <p>{{post.get_media_url}} </p>
+                <img class="post-image" src="{{ post.media_url }}" alt="Post Media">
+            {% endif %}
+            </a>
+        </div>
+        <div class="like-container">
+            <p>Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
+            <button class="like-button" data-post-id="{{ post.pk }}">Like</button>
+        </div>
+        </div>
+        
+    {% endfor %}
+    
+
+    
+    {% else %}
+    <div class="login-form">
+        <h2>Login</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}
+              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+          <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
+      </div>
+    {% endif %}
+{% endblock %}
