@@ -17,19 +17,19 @@ class Post(models.Model):
             return self.media_url.replace('gs://', 'https://firebasestorage.googleapis.com/v0/b/') + '?alt=media'
         return ''
 
-    @property
-    def like_count(self):
-        return PostLike.objects.filter(post=self).count()
+    # @property
+    # def like_count(self):
+    #     return PostLike.objects.filter(post=self).count()
 
 class PostLike(models.Model):
-    user = models.ForeignKey('user_service.CustomUser', on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey('user_service.CustomUser', on_delete=models.CASCADE, related_name='postLikes')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='postLikes')
     created_at = models.DateTimeField(auto_now_add=True)
     
 class Comment(models.Model):
     text = models.TextField()
-    user = models.ForeignKey('user_service.CustomUser', on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey('user_service.CustomUser', on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     created_at = models.DateTimeField(auto_now_add=True) 
     like_count = models.IntegerField(default=0)  
 

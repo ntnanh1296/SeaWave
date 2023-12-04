@@ -6,10 +6,15 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
-    path('posts/', views.PostList.as_view(), name='post-list'),
     path('posts/create/', views.create_post, name='create-post'),
     path('posts/<int:pk>/', views.PostDetailView.as_view(), name='post-detail'),
-    
+    path('posts/<int:pk>/edit/', views.edit_post, name='edit-post'),
+    path('posts/<int:pk>/delete/', views.delete_post, name='delete-post'),
+    path('posts/<int:pk>/comments/', views.create_comment, name='create-comment'),
+    path('comments/<int:pk>/edit/', views.edit_comment, name='edit-comment'),
+    path('comments/<int:pk>/delete/', views.delete_comment, name='delete-comment'),
+    path('posts/<int:pk>/like/', views.like_post, name='like-post'),
+    path('comments/<int:pk>/like/', views.like_comment, name='like-comment'),
 ]
 
 #
