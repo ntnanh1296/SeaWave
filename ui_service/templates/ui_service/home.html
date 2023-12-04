@@ -29,15 +29,18 @@
                     {% endif %}
                 </a>
             </div>
-        <div class="like-container">
-            <p>Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
-            <button class="like-button" data-post-id="{{ post.pk }}">Like</button>
+            <div class="like-container">
+                <p>Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
+                <button class="like-button" data-post-id="{{ post.pk }}">Like</button>
+            </div>
         </div>
-        </div>
+
         
     {% endfor %}
     
-
+    <script>
+        const csrfToken = "{{ csrf_token }}";
+    </script>
     
     {% else %}
     <div class="login-form">
@@ -57,4 +60,6 @@
         <p>Don't have an account? <a href="{% url 'register' %}">Sign up</a></p>
       </div>
     {% endif %}
+
+
 {% endblock %}
