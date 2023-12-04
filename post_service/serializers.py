@@ -1,7 +1,7 @@
 # post_service/serializers.py
 
 from rest_framework import serializers
-from .models import Post, Like, Comment
+from .models import Post, PostLike, Comment, CommentLike
 
 class PostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,12 +11,13 @@ class PostSerializer(serializers.ModelSerializer):
 
     # def to_representation(self, instance):
     #     data = super().to_representation(instance)
-    #     data['like_count'] = instance.like_count
+    #     data['like_
+    # count'] = instance.like_count
     #     return data
 
-class LikeSerializer(serializers.ModelSerializer):
+class PostLikeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Like
+        model = PostLike
         fields = '__all__'
         # read_only_fields = ['user', 'post', 'created_at']
 
@@ -25,3 +26,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = '__all__'
         # read_only_fields = ['user', 'post']
+class CommentLikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentLike
+        fields = '__all__'

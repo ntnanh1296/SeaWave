@@ -3,8 +3,8 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from django.conf import settings
-from .models import Post, Like, Comment
-from .serializers import PostSerializer, LikeSerializer, CommentSerializer
+from .models import Post, PostLike, Comment
+from .serializers import PostSerializer, PostLikeSerializer, CommentSerializer
 from .utils import get_redis_connection
 from user_service.models import CustomUser 
 from django.shortcuts import get_object_or_404
@@ -31,10 +31,8 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         # Check if the user making the request is the author of the post
         if request.user != post.author:
-            print("Anh was here if")
             return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-        print("Anh was here")
         serializer = self.get_serializer(post, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -50,11 +48,8 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
         # Check if the user making the request is the author of the post
         if request.user != post.author:
-            print("Anh was here if")
             return Response({'detail': 'You do not have permission to perform this action.'}, status=status.HTTP_403_FORBIDDEN)
 
-
-        print("Anh was here")
         # Remove from Redis mapping for user-posts
         redis_conn = get_redis_connection()
         redis_conn.srem(f'user_posts:{post.author.id}', post.id)
@@ -65,8 +60,8 @@ class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class LikeListView(generics.ListCreateAPIView):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
+    queryset = PostLike.objects.all()
+    serializer_class = PostLikeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
@@ -74,7 +69,7 @@ class LikeListView(generics.ListCreateAPIView):
         print(post_id)
         user = request.user
 
-        existing_like = Like.objects.filter(post=post_id, user=user).first()
+        existing_like = PostLike.objects.filter(post=post_id, user=user).first()
 
         if existing_like:
 
@@ -98,8 +93,8 @@ class LikeListView(generics.ListCreateAPIView):
             return Response({'detail': 'Post liked successfully.'}, status=status.HTTP_201_CREATED)
 
 class LikeDetailView(generics.RetrieveDestroyAPIView):
-    queryset = Like.objects.all()
-    serializer_class = LikeSerializer
+    queryset = PostLike.objects.all()
+    serializer_class = PostLikeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
 class CommentListCreateView(generics.ListCreateAPIView):
