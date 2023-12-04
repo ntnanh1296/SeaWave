@@ -337,3 +337,8 @@ input {
   box-sizing: border-box;
   width: 100%; 
 }
+
+a.post-link {
+    text-decoration: none; /* Disable underline */
+    color: inherit; /* Inherit text color from the parent */
+}
