@@ -51,7 +51,7 @@ curl --location 'http://localhost:8000/api/posts/1/' \
 
 ##### Get all post ####
 curl --location 'http://localhost:8000/api/posts/' \
---header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNDQ4MDE1LCJpYXQiOjE3MDE0MTkyMTUsImp0aSI6ImUyYTU1OWRiOTQxYzRlNWJhYTE1ZThlZTUwYzdiZjI3IiwidXNlcl9pZCI6M30.vyg0fRPEi25auE6S5az3zhc3w8kXW8P3_4luqXtdOF0'
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzAxNzAxOTM3LCJpYXQiOjE3MDE2NzMxMzcsImp0aSI6ImU2NjY3NjNmOWUxODQ5NzViMjcxYWIyMWU3MmNkNjc5IiwidXNlcl9pZCI6M30.S5qBPeSxob3FOK479xzPaXmNn6hWgPhhUVv2AAfQVFI'
 
 ##### Delete the post ####
 curl --location --request DELETE 'http://localhost:8000/api/posts/1/' \
