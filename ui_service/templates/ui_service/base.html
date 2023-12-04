@@ -1,0 +1,45 @@
+<!-- base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moonland</title>
+    <link rel="stylesheet" href="{% static 'ui_service/css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Moonland</h1>
+        {% if user.is_authenticated %}
+            <h2>Welcome, {{ user.username }}!</h2>
+            
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+
+        {% endif %}
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about/">About</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        {% block content %}
+        <!-- The child templates will override this block with their specific content -->
+        {% endblock %}
+    </main>
+
+    <footer>
+        &copy; 2023 My App. All rights reserved.
+    </footer>
+    <script src="{% static 'ui_service/js/script.js' %}"></script>
+
+</body>
+</html>
