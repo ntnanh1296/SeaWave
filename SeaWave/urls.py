@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('user_service.urls')),
     path('', include('post_service.urls')),
+    path('', include('ui_service.urls')),
     # Add other app URLs as needed
 ]
 

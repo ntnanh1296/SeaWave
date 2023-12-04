@@ -1,0 +1,26 @@
+<!-- app_main/templates/app_main/home.html -->
+{% extends 'ui_service/base.html' %}
+
+<!-- {% block title %}Home - Moonland{% endblock %} -->
+
+{% block content %}
+    {% if user.is_authenticated %}
+    {% else %}
+    <div class="login-form">
+        <h2>Login</h2>
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+          {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}
+              <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+          <button type="submit">Login</button>
+        </form>
+      
+      </div>
+    {% endif %}
+{% endblock %}
