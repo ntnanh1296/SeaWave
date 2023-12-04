@@ -1,6 +1,8 @@
 
 from pathlib import Path
 from datetime import timedelta
+import firebase_admin
+from firebase_admin import credentials
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -122,3 +124,6 @@ SIMPLE_JWT = {
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+firebase_credentials = credentials.Certificate('firebase_credentials.json')
+firebase_admin.initialize_app(firebase_credentials)
