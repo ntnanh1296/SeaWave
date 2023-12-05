@@ -3,6 +3,7 @@
 {% block content %}
     <div class="post-container">
         <div class="post">
+
             <p>Author: {{ post.author }} | Created at: {{ post.created_at }}</p>
             <a href="{% url 'post-detail' post.id %}" class="post-link" style="text-decoration: none; color: black;">
                 <p style="text-decoration: none; color: black;">{{ post.text }}</p>
@@ -11,17 +12,56 @@
                 {% endif %}
             </a>
         </div>
+        {% if user.is_authenticated and post.author == user %}
+            <a href="{% url 'edit-post' post.id %}">Edit</a>
+            <a href="{% url 'delete-post' post.id %}">Delete</a>
+        {% endif %}
         <div class="like-container">
             <p>Likes: <span id="like-count-{{ post.id }}">{{ post.like_count }}</span></p>
-            <button class="like-button" data-post-id="{{ post.id }}">Like</button>
+            <button class="like-post-button" data-post-id="{{ post.id }}">Like</button>
+        </div>
+
+        <div class="comments-container">
+            {% for comment in post.comments.all %}
+            <div class="comment">
+                <p>{{ comment.text }}</p>
+                <!-- <p>Likes: <span id="comment-like-count-{{ comment.id }}">{{ comment.like_count }}</span></p> -->
+                {% if user.is_authenticated and comment.author == user %}
+                    <a href="{% url 'edit-comment' comment.id %}">Edit</a>
+                    <a href="{% url 'delete-comment' comment.id %}">Delete</a>
+                {% endif %}
+                <!-- <form class="comment-like-form" id="comment-like-form-{{ comment.id }}" method="post" action="{% url 'like-comment' comment.id %}">
+                {% csrf_token %}
+                <button type="submit" id="like-button">Like</button>
+                </form> -->
+
+                <div class="like-container">
+                    <p>Likes: <span id="like-count-{{ comment.id }}">{{ comment.like_count }}</span></p>
+                    <button class="like-comment-button" data-comment-id="{{ comment.id }}">Like</button>
+                </div>
+
+            </div>
+            {% empty %}
+            <p>No comments yet.</p>
+            {% endfor %}
+        </div>
+    
+        <div class="add-comment">
+            <h3>Add a Comment</h3>
+            <form method="post" action="{% url 'create-comment' post.id %}">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit">Add Comment</button>
+            </form>
         </div>
     </div>
         
         <script>
         const csrfToken = "{{ csrf_token }}";
-        const likeButtons = document.querySelectorAll('.like-button');
+        const likePostButtons = document.querySelectorAll('.like-post-button');
+        const likeCommentButtons = document.querySelectorAll('.like-comment-button');
 
-        likeButtons.forEach((button) => {   
+        likePostButtons.forEach((button) => {   
             button.addEventListener('click', (event) => {
                 event.stopPropagation();
 
@@ -50,38 +90,42 @@
                 });
             });
         });
+
+
+        likeCommentButtons.forEach((button) => {   
+            button.addEventListener('click', (event) => {
+                event.stopPropagation();
+
+                const commentId = button.dataset.commentId;
+                const likeCountElement = document.querySelector(`#like-count-${commentId}`);
+
+                fetch(`/comments/${postId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                })
+                .then((response) => response.json())
+                .then((data) => {
+                    likeCountElement.textContent = data.like_count;
+
+                    if (data.is_liked) {
+                        button.textContent = 'Unlike';
+                    } else {
+                        button.textContent = 'Like';
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            });
+        });
         </script>
     
 
 
-    <div class="comments">
-        <h3>Comments</h3>
-        {% for comment in post.comments.all %}
-        <div class="comment">
-            <p>{{ comment.text }}</p>
-            <p>Likes: <span id="comment-like-count-{{ comment.id }}">{{ comment.like_count }}</span></p>
-            {% if user.is_authenticated and comment.author == user %}
-            <a href="{% url 'edit-comm' comment.id %}">Edit</a>
-            <a href="{% url 'edit-command' comment.id %}">Delete</a>
-            {% endif %}
-            <form class="comment-like-form" id="comment-like-form-{{ comment.id }}" method="post" action="{% url 'like-comment' comment.id %}">
-            {% csrf_token %}
-            <button type="submit" id="like-button">Like</button>
-            </form>
-        </div>
-        {% empty %}
-        <p>No comments yet.</p>
-        {% endfor %}
-    </div>
-
-    <div class="add-comment">
-        <h3>Add a Comment</h3>
-        <form method="post" action="{% url 'create-comment' post.id %}">
-        {% csrf_token %}
-        {{ comment_form.as_p }}
-        <button type="submit">Add Comment</button>
-        </form>
-    </div>
+    
 
     <!-- <script>
         // Reload the page after submitting the like form
