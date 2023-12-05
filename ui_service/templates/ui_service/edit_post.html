@@ -1,10 +1,26 @@
 {% extends 'ui_service/base.html' %}
-
 {% block content %}
-  <h2>Edit Post</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-  </form>
+    {% if user.is_authenticated %}
+    <div class="container">
+        <div class="post-creation-container">
+            <form class="create-post-form" method="post" action="{% url 'edit-post' post.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                    <p>
+                        <label for="post_text">Edit Post:</label>
+                        <textarea id="post_text" name="text" id="id_text" required> {{ post.text }}</textarea>
+                    </p>
+                    {% if post.media_url %}
+                        <img class="post-image" src="{{ post.media_url }}" alt="Post Media">
+                    {% endif %}
+                    <p>
+                        <label for="id_media">Media:</label>
+                        <input type="file" name="media" id="id_media">
+                    </p>
+                    <div id="media-preview"></div>
+                    <input type="submit" value="Edit Post">
+            </form>
+        </div>
+    </div>
+
+    {% endif %}
 {% endblock %}

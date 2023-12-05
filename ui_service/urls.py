@@ -17,6 +17,7 @@ urlpatterns = [
     path('comments/<int:pk>/like/', views.like_comment, name='like-comment'),
     path('users/<str:username>/', views.UserProfileView.as_view(), name='user-profile'),
     path('users/<str:username>/posts/', views.UserPostList.as_view(), name='user-post-list'),
+    path('users/follow/<str:username>/', views.follow_unfollow_user, name='follow-unfollow-user'),
 ]
 
 #
