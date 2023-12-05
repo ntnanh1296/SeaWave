@@ -267,13 +267,15 @@ def like_comment(request, pk):
 
     if comment.commentLikes.filter(user=request.user).exists():
         comment.commentLikes.filter(user=request.user).delete()
+        is_liked = False
     else:
         CommentLike.objects.create(user=request.user, comment=comment)
-
+        is_liked = True
+        
     comment.like_count = comment.commentLikes.count()
     comment.save()
 
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    return JsonResponse({'like_count': comment.like_count, 'is_liked': is_liked})
 
 def home(request):
     if request.method == 'POST':
