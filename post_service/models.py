@@ -5,20 +5,21 @@ from django.db import models
 class Post(models.Model):
     author = models.ForeignKey('user_service.CustomUser', on_delete=models.CASCADE)
     text = models.TextField()
-    media = models.ImageField(upload_to='post_photos/', null=True, blank=True)
+    # media = models.ImageField(upload_to='post_photos/', null=True, blank=True)
+    media = models.ImageField( null=True, blank=True)
     media_url = models.URLField(blank=True)
-    get_media_url = models.URLField(blank=True)
+    # get_media_url = models.URLField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     like_count = models.IntegerField(default=0)
 
-    def get_media_url(self):
-        if self.media_url:
-            return self.media_url.replace('gs://', 'https://firebasestorage.googleapis.com/v0/b/') + '?alt=media'
-        return ''
+    # def get_media_url(self):
+    #     if self.media_url:
+    #         return self.media_url.replace('gs://', 'https://firebasestorage.googleapis.com/v0/b/') + '?alt=media'
+    #     return ''
 
-    # @property
-    # def like_count(self):
+    # # @property
+    # # def like_count(self):
     #     return PostLike.objects.filter(post=self).count()
 
 class PostLike(models.Model):
@@ -36,4 +37,5 @@ class Comment(models.Model):
 class CommentLike(models.Model):
     user = models.ForeignKey('user_service.CustomUser', on_delete=models.CASCADE, related_name='commentLikes')
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='commentLikes')
-    like_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    # like_count = models.IntegerField(default=0)

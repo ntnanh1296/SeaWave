@@ -78,6 +78,11 @@ class PostList(FormMixin, ListView):
         else:
             return self.form_invalid(form)
 
+class UserProfileView(View):
+    def get(self, request, username):
+        user = CustomUser.objects.get(username=username)
+        posts = Post.objects.filter(author=user)
+        return render(request, 'ui_service/user_profile.html', {'user': user,'posts': posts})
 
 class PostDetailView(View):
     def get(self, request, pk):
