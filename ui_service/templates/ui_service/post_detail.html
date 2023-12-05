@@ -1,148 +1,129 @@
 {% extends 'ui_service/base.html' %}
 
 {% block content %}
+<div class="container">
     <div class="post-container">
-        <div class="post">
-
-            <p>Author: {{ post.author }} | Created at: {{ post.created_at }}</p>
-            <a href="{% url 'post-detail' post.id %}" class="post-link" style="text-decoration: none; color: black;">
-                <p style="text-decoration: none; color: black;">{{ post.text }}</p>
+        <div class="post-header">
+            <div>
+               <p class="post-author">{{ post.author }}</p>
+               <p class="post-timestamp">{{ post.created_at }}</p>
+           </div>
+        </div>
+        <div class="post-content">
+            <a href="{% url 'post-detail' post.pk %}" class="post-link">{{ post.text }}
                 {% if post.media_url %}
                     <img class="post-image" src="{{ post.media_url }}" alt="Post Media">
                 {% endif %}
             </a>
         </div>
         {% if user.is_authenticated and post.author == user %}
-            <a href="{% url 'edit-post' post.id %}">Edit</a>
-            <a href="{% url 'delete-post' post.id %}">Delete</a>
+            <div class="post-actions">
+                <a href="{% url 'edit-post' post.id %}" class="post-action">Edit</a>
+                <a href="{% url 'delete-post' post.id %}" class="post-action">Delete</a>
+            </div>
         {% endif %}
         <div class="like-container">
-            <p>Likes: <span id="like-count-{{ post.id }}">{{ post.like_count }}</span></p>
-            <button class="like-post-button" data-post-id="{{ post.id }}">Like</button>
+            <p class="post-like-count">Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
+            <button class="like-post-button" data-post-id="{{ post.pk }}">Like</button>   
         </div>
 
-        <div class="comments-container">
+        <div class="comment-container">
             {% for comment in post.comments.all %}
             <div class="comment">
                 <p>{{ comment.text }}</p>
-                <!-- <p>Likes: <span id="comment-like-count-{{ comment.id }}">{{ comment.like_count }}</span></p> -->
+
                 {% if user.is_authenticated and comment.author == user %}
                     <a href="{% url 'edit-comment' comment.id %}">Edit</a>
                     <a href="{% url 'delete-comment' comment.id %}">Delete</a>
                 {% endif %}
-                <!-- <form class="comment-like-form" id="comment-like-form-{{ comment.id }}" method="post" action="{% url 'like-comment' comment.id %}">
-                {% csrf_token %}
-                <button type="submit" id="like-button">Like</button>
-                </form> -->
 
                 <div class="like-container">
                     <p>Likes: <span id="like-count-{{ comment.id }}">{{ comment.like_count }}</span></p>
                     <button class="like-comment-button" data-comment-id="{{ comment.id }}">Like</button>
                 </div>
-
+    
             </div>
             {% empty %}
-            <p>No comments yet.</p>
+                <p>No comments yet.</p>
             {% endfor %}
         </div>
-    
-        <div class="add-comment">
-            <h3>Add a Comment</h3>
-            <form method="post" action="{% url 'create-comment' post.id %}">
+    </div>
+
+    <div class="add-comment">
+        <h3>Add a Comment</h3>
+        <form method="post" action="{% url 'create-comment' post.id %}">
             {% csrf_token %}
             {{ comment_form.as_p }}
             <button type="submit">Add Comment</button>
-            </form>
-        </div>
+        </form>
     </div>
+</div>
         
-        <script>
-        const csrfToken = "{{ csrf_token }}";
-        const likePostButtons = document.querySelectorAll('.like-post-button');
-        const likeCommentButtons = document.querySelectorAll('.like-comment-button');
+<script>
+    const csrfToken = "{{ csrf_token }}";
+    const likePostButtons = document.querySelectorAll('.like-post-button');
+    const likeCommentButtons = document.querySelectorAll('.like-comment-button');
 
-        likePostButtons.forEach((button) => {   
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
+    likePostButtons.forEach((button) => {   
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
 
-                const postId = button.dataset.postId;
-                const likeCountElement = document.querySelector(`#like-count-${postId}`);
+            const postId = button.dataset.postId;
+            const likeCountElement = document.querySelector(`#like-count-${postId}`);
 
-                fetch(`/posts/${postId}/like/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                })
-                .then((response) => response.json())
-                .then((data) => {
-                    likeCountElement.textContent = data.like_count;
+            fetch(`/posts/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                likeCountElement.textContent = data.like_count;
 
-                    if (data.is_liked) {
-                        button.textContent = 'Unlike';
-                    } else {
-                        button.textContent = 'Like';
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+                if (data.is_liked) {
+                    button.textContent = 'Unlike';
+                } else {
+                    button.textContent = 'Like';
+                }
+            })
+            .catch((error) => {
+                console.log(error);
             });
         });
+    });
 
 
-        likeCommentButtons.forEach((button) => {   
-            button.addEventListener('click', (event) => {
-                event.stopPropagation();
+    likeCommentButtons.forEach((button) => {   
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
 
-                const commentId = button.dataset.commentId;
-                const likeCountElement = document.querySelector(`#like-count-${commentId}`);
+            const commentId = button.dataset.commentId;
+            const likeCountElement = document.querySelector(`#like-count-${commentId}`);
 
-                fetch(`/comments/${postId}/like/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                })
-                .then((response) => response.json())
-                .then((data) => {
-                    likeCountElement.textContent = data.like_count;
+            fetch(`/comments/${commentId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                likeCountElement.textContent = data.like_count;
 
-                    if (data.is_liked) {
-                        button.textContent = 'Unlike';
-                    } else {
-                        button.textContent = 'Like';
-                    }
-                })
-                .catch((error) => {
-                    console.log(error);
-                });
+                if (data.is_liked) {
+                    button.textContent = 'Unlike';
+                } else {
+                    button.textContent = 'Like';
+                }
+            })
+            .catch((error) => {
+                console.log(error);
             });
         });
-        </script>
-    
+    });
+</script>
 
-
-    
-
-    <!-- <script>
-        // Reload the page after submitting the like form
-        document.getElementById("like-form").addEventListener("submit", function() {
-        window.location.reload();
-        });
-
-        // Reload the page after submitting the comment like form
-        const commentLikeForms = document.getElementsByClassName("comment-like-form");
-        for (let i = 0; i < commentLikeForms.length; i++) {
-        const form = commentLikeForms[i];
-        const commentId = form.getAttribute("id").split("-").pop();
-        form.addEventListener("submit", function() {
-            const likeCountElement = document.getElementById(`comment-like-count-${commentId}`);
-            likeCountElement.textContent = parseInt(likeCountElement.textContent) + 1;
-            form.querySelector("button").disabled = true;
-        });
-        }
-    </script> -->
 {% endblock %}

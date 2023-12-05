@@ -22,7 +22,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
     birthday = models.DateField(blank=True, null=True)
-
+    bio = models.TextField(blank=True)
     # objects = CustomUserManager()
 
     groups = models.ManyToManyField(
