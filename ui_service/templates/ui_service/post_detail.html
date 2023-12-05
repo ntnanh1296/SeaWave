@@ -1,68 +1,129 @@
 {% extends 'ui_service/base.html' %}
 
 {% block content %}
-  <div class="post">
-    <h2>{{ post.title }}</h2>
-    <p>{{ post.content }}</p>
-    {% if post.media %}
-        <img src="{{ post.media }}" alt="Post Image">
-    {% endif %}
-    <p>Likes: <span id="like-count">{{ post.like_count }}</span></p>
-    {% if user.is_authenticated and post.author == user %}
-      <a href="{% url 'edit-post' post.id %}">Edit</a>
-      <a href="{% url 'delete-post' post.id %}">Delete</a>
-    {% endif %}
-    <form id="like-form" method="post" action="{% url 'like-post' post.id %}">
-      {% csrf_token %}
-      <button id="like-btn" type="submit">Like</button>
-    </form>
-  </div>
-
-  <div class="comments">
-    <h3>Comments</h3>
-    {% for comment in post.comments.all %}
-      <div class="comment">
-        <p>{{ comment.content }}</p>
-        <p>Likes: <span id="comment-like-count-{{ comment.id }}">{{ comment.like_count }}</span></p>
-        {% if user.is_authenticated and comment.author == user %}
-          <a href="{% url 'edit-comm' comment.id %}">Edit</a>
-          <a href="{% url 'edit-command' comment.id %}">Delete</a>
+<div class="container">
+    <div class="post-container">
+        <div class="post-header">
+            <div>
+               <p class="post-author">{{ post.author }}</p>
+               <p class="post-timestamp">{{ post.created_at }}</p>
+           </div>
+        </div>
+        <div class="post-content">
+            <a href="{% url 'post-detail' post.pk %}" class="post-link">{{ post.text }}
+                {% if post.media_url %}
+                    <img class="post-image" src="{{ post.media_url }}" alt="Post Media">
+                {% endif %}
+            </a>
+        </div>
+        {% if user.is_authenticated and post.author == user %}
+            <div class="post-actions">
+                <a href="{% url 'edit-post' post.id %}" class="post-action">Edit</a>
+                <a href="{% url 'delete-post' post.id %}" class="post-action">Delete</a>
+            </div>
         {% endif %}
-        <form class="comment-like-form" id="comment-like-form-{{ comment.id }}" method="post" action="{% url 'like-comment' comment.id %}">
-          {% csrf_token %}
-          <button type="submit" id="like-button">Like</button>
+        <div class="like-container">
+            <p class="post-like-count">Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
+            <button class="like-post-button" data-post-id="{{ post.pk }}">Like</button>   
+        </div>
+
+        <div class="comment-container">
+            {% for comment in post.comments.all %}
+            <div class="comment">
+                <p>{{ comment.text }}</p>
+
+                {% if user.is_authenticated and comment.author == user %}
+                    <a href="{% url 'edit-comment' comment.id %}">Edit</a>
+                    <a href="{% url 'delete-comment' comment.id %}">Delete</a>
+                {% endif %}
+
+                <div class="like-container">
+                    <p>Likes: <span id="like-count-{{ comment.id }}">{{ comment.like_count }}</span></p>
+                    <button class="like-comment-button" data-comment-id="{{ comment.id }}">Like</button>
+                </div>
+    
+            </div>
+            {% empty %}
+                <p>No comments yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="add-comment">
+        <h3>Add a Comment</h3>
+        <form method="post" action="{% url 'create-comment' post.id %}">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit">Add Comment</button>
         </form>
-      </div>
-    {% empty %}
-      <p>No comments yet.</p>
-    {% endfor %}
-  </div>
+    </div>
+</div>
+        
+<script>
+    const csrfToken = "{{ csrf_token }}";
+    const likePostButtons = document.querySelectorAll('.like-post-button');
+    const likeCommentButtons = document.querySelectorAll('.like-comment-button');
 
-  <div class="add-comment">
-    <h3>Add a Comment</h3>
-    <form method="post" action="{% url 'create-comment' post.id %}">
-      {% csrf_token %}
-      {{ comment_form.as_p }}
-      <button type="submit">Add Comment</button>
-    </form>
-  </div>
+    likePostButtons.forEach((button) => {   
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
 
-  <script>
-    // Reload the page after submitting the like form
-    document.getElementById("like-form").addEventListener("submit", function() {
-      window.location.reload();
+            const postId = button.dataset.postId;
+            const likeCountElement = document.querySelector(`#like-count-${postId}`);
+
+            fetch(`/posts/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                likeCountElement.textContent = data.like_count;
+
+                if (data.is_liked) {
+                    button.textContent = 'Unlike';
+                } else {
+                    button.textContent = 'Like';
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+        });
     });
 
-    // Reload the page after submitting the comment like form
-    const commentLikeForms = document.getElementsByClassName("comment-like-form");
-    for (let i = 0; i < commentLikeForms.length; i++) {
-      const form = commentLikeForms[i];
-      const commentId = form.getAttribute("id").split("-").pop();
-      form.addEventListener("submit", function() {
-        const likeCountElement = document.getElementById(`comment-like-count-${commentId}`);
-        likeCountElement.textContent = parseInt(likeCountElement.textContent) + 1;
-        form.querySelector("button").disabled = true;
-      });
-    }
-  </script>
+
+    likeCommentButtons.forEach((button) => {   
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+
+            const commentId = button.dataset.commentId;
+            const likeCountElement = document.querySelector(`#like-count-${commentId}`);
+
+            fetch(`/comments/${commentId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+                likeCountElement.textContent = data.like_count;
+
+                if (data.is_liked) {
+                    button.textContent = 'Unlike';
+                } else {
+                    button.textContent = 'Like';
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+        });
+    });
+</script>
+
 {% endblock %}

@@ -1,0 +1,9 @@
+<!-- comment_list.html -->
+{% extends 'ui_service/base.html' %}
+{% for comment in comments %}
+  <div class="comment">
+    <p>{{ comment.content }}</p>
+    <p>Author: {{ comment.author }}</p>
+    <p>Timestamp: {{ comment.created_at }}</p>
+  </div>
+{% endfor %}

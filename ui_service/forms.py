@@ -22,7 +22,7 @@ class PostForm(forms.ModelForm):
     image = forms.ImageField(required=False)
     class Meta:
         model = Post
-        fields = ['text', 'media']
+        fields = ['text']
 
 class CommentForm(forms.ModelForm):
     class Meta:
