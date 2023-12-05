@@ -6,6 +6,36 @@
     <p>Email: {{ user.email }}</p>
     <p>Joined: {{ user.created_at }}</p>
     <p>Followers: {{ follower_count }}</p>
+
+    {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="{{ user.username }} Avatar">
+    {% endif %}
+
+    {% if user.cover_photo %}
+        <img src="{{ user.cover_photo.url }}" alt="{{ user.username }} Cover Photo">
+    {% endif %}
+
+    <p>Bio: {{ user.bio }}</p>
+
+    {% if user == request.user %}
+        <div class="update-profile-container">
+            <h3>Update Profile</h3>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ update_profile_form.as_p }}
+                <input type="submit" value="Update Profile">
+            </form>
+            <script>
+                document.getElementById("id_avatar").addEventListener("click", function() {
+                    document.getElementById("id_avatar").click();
+                });
+
+                document.getElementById("id_cover_photo").addEventListener("click", function() {
+                    document.getElementById("id_cover_photo").click();
+                });
+            </script>
+        </div>
+    {% endif %}
     
     {% if user != request.user %}
         {% if is_following %}
@@ -68,5 +98,5 @@
             </div>
         {% endfor %}
     </div>
-
+    {% endif %}
 {% endblock %}
