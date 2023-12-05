@@ -1,42 +1,46 @@
 {% extends 'ui_service/base.html' %}
 {% block content %}
 {% if user.is_authenticated %}
-
-    <h2>{{ user.username }}</h2>
-    <p>Email: {{ user.email }}</p>
-    <p>Joined: {{ user.created_at }}</p>
-    <p>Followers: {{ follower_count }}</p>
-
-    {% if user.avatar %}
-        <img src="{{ user.avatar.url }}" alt="{{ user.username }} Avatar">
-    {% endif %}
-
-    {% if user.cover_photo %}
-        <img src="{{ user.cover_photo.url }}" alt="{{ user.username }} Cover Photo">
-    {% endif %}
-
-    <p>Bio: {{ user.bio }}</p>
-
-    {% if user == request.user %}
-        <div class="update-profile-container">
-            <h3>Update Profile</h3>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ update_profile_form.as_p }}
-                <input type="submit" value="Update Profile">
-            </form>
-            <script>
-                document.getElementById("id_avatar").addEventListener("click", function() {
-                    document.getElementById("id_avatar").click();
-                });
-
-                document.getElementById("id_cover_photo").addEventListener("click", function() {
-                    document.getElementById("id_cover_photo").click();
-                });
-            </script>
+    <div class="photo-profile-container">
+        <div class="cover-photo-container">
+            {% if user.cover_photo %}
+                <img class="cover-photo" src="{{ user.cover_photo.url }}" alt="{{ user.username }} Cover Photo">
+            {% endif %}
+            <div class="avatar-container">
+                {% if user.avatar %}
+                    <img class="avatar" src="{{ user.avatar.url }}" alt="{{ user.username }} Avatar">
+                {% endif %}
+            </div>
         </div>
-    {% endif %}
-    
+
+        <div class="user-info">
+            <div class="user-name">{{ user.username }}</div>
+            <div class="user-email">Email: {{ user.email }}</div>
+            <div class="user-joined">Joined: {{ user.created_at }}</div>
+            <div class="user-followers">Followers: {{ follower_count }}</div>
+            <div class="user-bio">Bio: {{ user.bio }}</div>
+
+            {% if user == request.user %}
+                <div class="update-profile-container">
+                    <h3>Update Profile</h3>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ update_profile_form.as_p }}
+                        <input type="submit" value="Update Profile">
+                    </form>
+                    <script>
+                        document.getElementById("id_avatar").addEventListener("click", function() {
+                            document.getElementById("id_avatar").click();
+                        });
+
+                        document.getElementById("id_cover_photo").addEventListener("click", function() {
+                            document.getElementById("id_cover_photo").click();
+                        });
+                    </script>
+                </div>
+            {% endif %}
+        </div>
+    </div>
     {% if user != request.user %}
         {% if is_following %}
             <form method="post" action="{% url 'follow-unfollow-user' user.username %}">

@@ -61,3 +61,25 @@ document.addEventListener('DOMContentLoaded', function() {
       });
   });
 });
+
+
+document.addEventListener("click", function (event) {
+    const dropdowns = document.getElementsByClassName("post-actions-content");
+    for (const dropdown of dropdowns) {
+        if (!event.target.matches('.post-actions-btn') && !dropdown.contains(event.target)) {
+            dropdown.style.display = 'none';
+        }
+    }
+});
+
+document.addEventListener("click", function (event) {
+    const dropdownBtns = document.getElementsByClassName("post-actions-btn");
+    for (const dropdownBtn of dropdownBtns) {
+        const dropdown = dropdownBtn.nextElementSibling;
+        if (event.target === dropdownBtn) {
+            dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+        } else {
+            dropdown.style.display = 'none';
+        }
+    }
+});
