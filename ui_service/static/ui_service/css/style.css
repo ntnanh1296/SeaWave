@@ -81,6 +81,7 @@ body {
     background-color: #45a049;
 }
 
+
 /* Post List CSS */
 
 .container {
@@ -167,6 +168,19 @@ body {
     background-color: #0056b3;
 }
 
+
+.follow-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.follow-button:hover {
+    background-color: #0056b3;
+}
 
 .login-form {
     max-width: 400px;

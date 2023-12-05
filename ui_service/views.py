@@ -16,6 +16,7 @@ from django.views import View
 from django.views.generic.edit import FormMixin
 from django.views.generic import ListView
 from django.urls import reverse_lazy
+from follow_service.models import Follower
 
 cred = credentials.Certificate('firebase_credentials.json')
 try:
@@ -60,17 +61,6 @@ class PostList(FormMixin, ListView):
     form_class = PostForm
     success_url = reverse_lazy('home')
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     posts = context['posts']
-    #     for post in posts:
-    #         if post.media_url:
-    #             post.get_media_url = post.media_url.replace('https://storage.googleapis.com/moonland-99249.appspot.com/post_media/', 'https://firebasestorage.googleapis.com/v0/b/moonland-99249.appspot.com/o/post_media%2F') 
-    #             post.get_media_url = post.get_media_url + '?alt=media'
-    #         post.author = post.author
-    #     context['posts'] = posts
-    #     return context
-
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if form.is_valid():
@@ -82,7 +72,16 @@ class UserProfileView(View):
     def get(self, request, username):
         user = CustomUser.objects.get(username=username)
         posts = Post.objects.filter(author=user)
-        return render(request, 'ui_service/user_profile.html', {'user': user,'posts': posts})
+        follower_count = Follower.objects.filter(user=user).count()
+        is_following = Follower.objects.filter(user=user, follower=request.user).exists()
+
+        context = {
+            'user': user,
+            'follower_count': follower_count,
+            'is_following': is_following,
+            'posts' : posts
+        }
+        return render(request, 'ui_service/user_profile.html', context)
 
 class PostDetailView(View):
     def get(self, request, pk):
@@ -136,9 +135,9 @@ def user_logout(request):
     return redirect('home')  
 
 def update_media(post, file):
-    if post.media_url:
-        blob = storage.bucket(BUCKET_NAME).blob(post.media_url)
-        blob.delete()
+    # if post.media_url:
+    #     blob = storage.bucket(BUCKET_NAME).blob(post.media_url)
+    #     blob.delete()
 
     bucket = storage.bucket(BUCKET_NAME)
     blob = bucket.blob('post_media/' + file.name)
@@ -177,29 +176,37 @@ def create_post(request):
 @login_required
 def edit_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
-    if request.user == post.author or request.user.is_superuser:
-        if request.method == 'POST':
-            form = PostForm(request.POST, instance=post)
-            if form.is_valid():
-                form.save()
-                return redirect('post-detail', pk=pk)
-        else:
-            form = PostForm(instance=post)
-        return render(request, 'ui_service/edit_post.html', {'form': form})
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+            post = form.save(commit=False)
+            post.save()
+            if 'media' in request.FILES:
+                media_file = request.FILES['media']
+                try:
+                    update_media(post, media_file)
+                except Exception as e:
+                    return JsonResponse({'success': False, 'error': str(e)})
+            return redirect('post-detail', pk=pk)
     else:
-        return HttpResponseForbidden()
+        form = PostForm(instance=post)
+
+    return render(request, 'ui_service/edit_post.html', {'form': form, 'post': post})
 
 @login_required
 def delete_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
+
     if request.user == post.author or request.user.is_superuser:
         if request.method == 'POST':
             post.delete()
-            return redirect('post-list')
-        return render(request, 'ui_service/delete_post.html', {'post': post})
-    else:
-        return HttpResponseForbidden()
+            return redirect('home')
 
+        return render(request, 'ui_service/delete_post.html', {'post': post})
+
+    return HttpResponseForbidden()
 
 @login_required
 def create_comment(request, pk):
@@ -265,6 +272,20 @@ def like_post(request, pk):
 
     return JsonResponse({'like_count': post.like_count, 'is_liked': is_liked})
 
+@login_required
+def follow_unfollow_user(request, username):
+    user_to_follow = get_object_or_404(CustomUser, username=username)
+    if user_to_follow == request.user:
+        return redirect('user-profile', username=username)
+    
+    is_following = Follower.objects.filter(user=user_to_follow, follower=request.user).exists()
+    if is_following:
+        Follower.objects.filter(user=user_to_follow, follower=request.user).delete()
+    else:
+        Follower.objects.create(user=user_to_follow, follower=request.user)
+
+    return redirect('user-profile', username=username)
+
 
 @login_required
 def like_comment(request, pk):
@@ -298,15 +319,8 @@ def home(request):
         form = LoginForm()
 
     if request.user.is_authenticated:
-        
-        # post_list_view = PostList()
-        # post_list_view.request = request
-        # post_list_view.args = ()  # Set args and kwargs as needed
-        # post_list_view.kwargs = {}
-
         posts = Post.objects.all().order_by('-created_at')
 
-        # Render the template with the posts
         return render(request, 'ui_service/home.html', {'form': form, 'posts': posts})
         
     return render(request, 'ui_service/home.html', {'form': form})
