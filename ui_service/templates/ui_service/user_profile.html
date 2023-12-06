@@ -20,7 +20,7 @@
             <div class="user-followers">Followers: {{ follower_count }}</div>
             <div class="user-bio">Bio: {{ user.bio }}</div>
 
-            {% if user == request.user %}
+            <!-- {% if user == request.user %}
                 <div class="update-profile-container">
                     <h3>Update Profile</h3>
                     <form method="post" enctype="multipart/form-data">
@@ -38,7 +38,7 @@
                         });
                     </script>
                 </div>
-            {% endif %}
+            {% endif %} -->
         </div>
     </div>
     {% if user != request.user %}
@@ -77,27 +77,37 @@
         {% for post in posts %}
             <div class="post-container">
                 <div class="post-header">
-                        <div>
+                    <div>
                         <p class="post-author">{{ post.author }}</p>
                         <p class="post-timestamp">{{ post.created_at }}</p>
                     </div>
+                    {% if user.is_authenticated and post.author == user %}
+                        <div class="post-actions-dropdown">
+                            <button class="post-actions-btn">&#x2026;</button>
+                            <div class="post-actions-content">
+                                <a href="{% url 'edit-post' post.id %}" class="post-action">Edit</a>
+                                <a href="{% url 'delete-post' post.id %}" class="post-action">Delete</a>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
+                <hr>
                 <div class="post-content">
                     <a href="{% url 'post-detail' post.pk %}" class="post-link">{{ post.text }}
-                    {% if post.media_url %}
-                        <img class="post-image" src="{{ post.media_url }}" alt="Post Media">
-                    {% endif %}
+                        <hr>
+                        {% if post.media_url %}
+                            <img class="post-image" src="{{ post.media_url }}" alt="Post Media">
+                        {% endif %}
                     </a>
                 </div>
-                {% if user.is_authenticated and post.author == user %}
-                    <div class="post-actions">
-                        <a href="{% url 'edit-post' post.id %}" class="post-action">Edit</a>
-                        <a href="{% url 'delete-post' post.id %}" class="post-action">Delete</a>
-                    </div>
-                {% endif %}
                 <div class="like-container">
                     <p class="post-like-count">Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
+                </div>
+                <hr>
+                <div class="post-actions">
                     <button class="like-button" data-post-id="{{ post.pk }}">Like</button>
+                    <button class="comment-button" data-post-id="{{ post.pk }}">Comment</button>
+                    <button class="share-button" data-post-id="{{ post.pk }}">Share</button>
                 </div>
             </div>
         {% endfor %}
