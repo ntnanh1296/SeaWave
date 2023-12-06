@@ -19,6 +19,8 @@ urlpatterns = [
     path('users/<str:username>/posts/', views.UserPostList.as_view(), name='user-post-list'),
     path('users/follow/<str:username>/', views.follow_unfollow_user, name='follow-unfollow-user'),
     path('users/<str:username>/update/', views.update_profile, name='update-profile'),
+    path('posts/<int:post_id>/share/', views.share_post, name='share-post'),
+    path('posts/<int:post_id>/get_comments/', views.get_comments, name='get-comments'),
 ]
 
 #
