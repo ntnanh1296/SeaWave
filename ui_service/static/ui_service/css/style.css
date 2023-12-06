@@ -356,18 +356,79 @@ body {
 .post-actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 10px; /* Adjust the margin as needed */
+    margin-top: 10px;
 }
 
 .like-button, .comment-button, .share-button {
     width: 32%;
-    background-color: #e8eff3; /* Example background color */
-    color: gray; /* Example text color */
+    background-color: #e8eff3; 
+    color: gray;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
 .like-button, .comment-button, .share-button:hover {
-    background-color:: #e8eff3;
+    background-color: #e8eff3;
+}
+
+.count-container {
+    display: flex;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.post-like-count, .post-comment-count, .post-share-count {
+    width: 32%;
+    background-color: #ffffff;
+    color: gray;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment-actions-dropdown {
+    position: relative;
+    margin-left: auto;
+}
+
+.comment-actions-btn {
+    background-color: #ffffff;
+    color: gray;
+    border: none;
+    font-size: 25px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.comment-actions-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.comment-actions-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.comment-actions-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.comment-actions-dropdown:hover .post-actions-content {
+    display: block;
+}
+
+
+.comment-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
 }

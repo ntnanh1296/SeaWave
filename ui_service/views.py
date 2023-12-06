@@ -87,7 +87,6 @@ class UserProfileView(View):
 def user_detail(request, username):
     user = CustomUser.objects.get(username=username)
     posts = Post.objects.filter(author=user).order_by('-created_at')
-    print(posts)
     follower_count = user.followers.count()
     is_following = user.followers.filter(follower=request.user).exists()
 
@@ -238,6 +237,32 @@ def delete_post(request, pk):
     return HttpResponseForbidden()
 
 @login_required
+def share_post(request, post_id):
+    post = Post.objects.get(pk=post_id)
+
+    post.share_count += 1
+    post.save()
+
+    return JsonResponse({'share_count': post.share_count})
+
+@login_required
+def get_comments(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    comments = Comment.objects.filter(post=post)
+    
+    comments_data = []
+    for comment in comments:
+        comments_data.append({
+            'id': comment.id,
+            'text': comment.text,
+            'like_count': comment.like_count, 
+            'user' : comment.user,
+            'created_at' : comment.created_at
+        })
+
+    return JsonResponse(comments_data, safe=False)
+
+@login_required
 def create_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == 'POST':
@@ -248,6 +273,8 @@ def create_comment(request, pk):
             comment.post = post
             comment.user_id = request.user.id
             comment.save()
+            post.comment_count += 1
+            post.save()
             return redirect('post-detail', pk=pk)
     else:
         comment_form = CommentForm()

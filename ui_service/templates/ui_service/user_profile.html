@@ -100,8 +100,10 @@
                         {% endif %}
                     </a>
                 </div>
-                <div class="like-container">
+                <div class="count-container">
                     <p class="post-like-count">Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
+                    <p class="post-comment-count">Comments: <span id="comment-count-{{ post.pk }}">{{ post.comment_count }}</span></p>
+                    <p class="post-share-count">Shares: <span id="share-count-{{ post.pk }}">{{ post.share_count }}</span></p>
                 </div>
                 <hr>
                 <div class="post-actions">
@@ -112,5 +114,8 @@
             </div>
         {% endfor %}
     </div>
+    <script>
+        const csrfToken = "{{ csrf_token }}";
+    </script>
     {% endif %}
 {% endblock %}
