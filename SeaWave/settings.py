@@ -4,6 +4,7 @@ from datetime import timedelta
 import firebase_admin
 from firebase_admin import credentials
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -69,16 +70,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'SeaWave.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'seawave_db',
-        'USER': 'sqladm',
-        'PASSWORD': '000000x@X',
-        'HOST': 'localhost',
-        'PORT': '5432',
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'seawave_db',
+            'USER': 'sqladm',
+            'PASSWORD': '000000x@X',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

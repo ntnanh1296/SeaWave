@@ -86,7 +86,8 @@ class UserProfileView(View):
 @login_required
 def user_detail(request, username):
     user = CustomUser.objects.get(username=username)
-    posts = Post.objects.filter(author=user)
+    posts = Post.objects.filter(author=user).order_by('-created_at')
+    print(posts)
     follower_count = user.followers.count()
     is_following = user.followers.filter(follower=request.user).exists()
 
