@@ -248,7 +248,7 @@ def share_post(request, post_id):
 @login_required
 def get_comments(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    comments = Comment.objects.filter(post=post)
+    comments = Comment.objects.filter(post=post).order_by('created_at')
     
     comments_data = []
     for comment in comments:
@@ -256,8 +256,11 @@ def get_comments(request, post_id):
             'id': comment.id,
             'text': comment.text,
             'like_count': comment.like_count, 
-            'user' : comment.user,
-            'created_at' : comment.created_at
+            'user' : comment.user.username,
+            'avatar_url' : comment.user.avatar_url,
+            'created_at' : comment.created_at,
+            'is_authenticated': request.user.is_authenticated,
+            'is_comment_author': comment.user.username == request.user.username,
         })
 
     return JsonResponse(comments_data, safe=False)
