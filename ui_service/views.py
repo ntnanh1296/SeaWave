@@ -7,7 +7,7 @@ from .forms import LoginForm, RegistrationForm, PostForm
 from django.contrib import messages
 import firebase_admin
 from firebase_admin import storage, credentials
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, UserProfileForm
 from post_service.models import Post, Comment, PostLike, CommentLike
 from post_service.serializers import PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
 from user_service.models import CustomUser
@@ -74,7 +74,7 @@ class UserProfileView(View):
         posts = Post.objects.filter(author=user)
         follower_count = Follower.objects.filter(user=user).count()
         is_following = Follower.objects.filter(user=user, follower=request.user).exists()
-
+        
         context = {
             'user': user,
             'follower_count': follower_count,
@@ -82,6 +82,33 @@ class UserProfileView(View):
             'posts' : posts
         }
         return render(request, 'ui_service/user_profile.html', context)
+
+@login_required
+def user_detail(request, username):
+    user = CustomUser.objects.get(username=username)
+    posts = Post.objects.filter(author=user).order_by('-created_at')
+    print(posts)
+    follower_count = user.followers.count()
+    is_following = user.followers.filter(follower=request.user).exists()
+
+    update_profile_form = UserProfileForm(instance=user)
+
+    if request.method == 'POST':
+        update_profile_form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if update_profile_form.is_valid():
+            update_profile_form.save()
+            return redirect('user-detail', username=username)
+
+    context = {
+            'user': user,
+            'follower_count': follower_count,
+            'is_following': is_following,
+            'posts' : posts,
+            'update_profile_form': update_profile_form
+    }
+    
+    return render(request, 'ui_service/user_profile.html', context)
+
 
 class PostDetailView(View):
     def get(self, request, pk):
@@ -109,7 +136,7 @@ def register(request):
         form = RegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('login')
+            return redirect('home')
     else:
         form = RegistrationForm()
     return render(request, 'ui_service/register.html', {'form': form})    
@@ -135,12 +162,13 @@ def user_logout(request):
     return redirect('home')  
 
 def update_media(post, file):
-    # if post.media_url:
-    #     blob = storage.bucket(BUCKET_NAME).blob(post.media_url)
-    #     blob.delete()
+    if post.media_url:
+        existing_file_name = post.media_url.split('/')[-1]
+        blob = storage.bucket(BUCKET_NAME).blob('post_media/' + str(post.id) + '/' + existing_file_name)
+        blob.delete()
 
     bucket = storage.bucket(BUCKET_NAME)
-    blob = bucket.blob('post_media/' + file.name)
+    blob = bucket.blob('post_media/' + str(post.id) + '/' + file.name)
     file.seek(0)  # Ensure the file is at the beginning
     blob.upload_from_file(file, content_type='image/jpeg')  # Set the content type to image/jpeg
     blob.make_public()
@@ -155,6 +183,8 @@ def create_post(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+            print("AnhWasHere")
+            print(post.id)
 
             if 'media' in request.FILES:
                 media_file = request.FILES['media']
@@ -167,7 +197,6 @@ def create_post(request):
             
         else:
             return JsonResponse({'success': False, 'errors': form.errors})
-            
     else:
         form = PostForm()
 
@@ -302,6 +331,20 @@ def like_comment(request, pk):
     comment.save()
 
     return JsonResponse({'like_count': comment.like_count, 'is_liked': is_liked})
+
+@login_required
+def update_profile(request, username):
+    user = CustomUser.objects.get(username=username)
+
+    if request.method == 'POST':
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=user)
+        if profile_form.is_valid():
+            profile_form.save()
+            return redirect('user-detail', username=username)
+    else:
+        profile_form = UserProfileForm(instance=user)
+
+    return render(request, 'ui_service/update_profile.html', {'profile_form': profile_form, 'user': user})
 
 def home(request):
     if request.method == 'POST':
