@@ -92,58 +92,103 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     commentButtons.forEach((button) => {
-        button.addEventListener('click', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-    
-            const postId = button.dataset.postId;
-            const commentSection = document.getElementById(`comment-section-${postId}`);
-            const isCommentSectionVisible = commentSection.style.display !== 'none';
-    
-            if (isCommentSectionVisible) {
-                commentSection.style.display = 'none';
-            } else {
-                fetch(`/posts/${postId}/get_comments/`)
-                    .then((response) => response.json())
-                    .then((comments) => {
-                        commentSection.innerHTML = '';
-    
-                        comments.forEach((comment) => {
-                            const commentElement = document.createElement('div');
-                            commentElement.classList.add('comment');
-                            commentElement.innerHTML = `
-                            <div class="comment-header">
-                                <div>
-                                    <p class="comment-author">${comment.user}</p>
-                                    <p class="comment-timestamp">${comment.created_at}</p>
-                                </div>
-                                <hr>
-                                {% if user.is_authenticated and comment.author == user %}
-                                    <div class="comment-actions-dropdown">
-                                        <button class="comment-actions-btn">&#x2026;</button>
-                                        <div class="comment-actions-content">
-                                            <a href="{% url 'edit-comment' ${comment.id} %}" class="comment-action">Edit</a>
-                                            <a href="{% url 'delete-comment' ${comment.id} %}" class="comment-action">Delete</a>
-                                        </div>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <p>${comment.text}</p>
-                            <button class="like-comment-button" data-comment-id="${comment.id}">Like</button>
-                            <span id="like-count-comment-${comment.id}">${comment.like_count}</span>
-                            `;
-                            commentSection.appendChild(commentElement);
-                        });
-
-                        commentSection.style.display = 'block';
-                        likeCommentEvent();
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            }
-        });
+        button.addEventListener('click', handleCommentButtonClick);
     });
+    
+    function handleCommentButtonClick(event) {
+        event.preventDefault();
+        event.stopPropagation();
+    
+        const postId = event.target.dataset.postId;
+        const commentSection = document.getElementById(`comment-section-${postId}`);
+        const isCommentSectionVisible = commentSection.style.display !== 'none';
+    
+        if (isCommentSectionVisible) {
+            commentSection.style.display = 'none';
+        } else {
+            fetch(`/posts/${postId}/get_comments/`)
+                .then((response) => response.json())
+                .then((comments) => {
+                    renderComments(comments, commentSection);
+                    commentSection.style.display = 'block';
+                    likeCommentEvent();
+                    commentActionDropdownEvent();
+                    commentActionButtonEvent();
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }
+    }
+    
+    function renderComments(comments, container) {
+        container.innerHTML = '';
+    
+        comments.forEach((comment) => {
+            const commentElement = document.createElement('div');
+            commentElement.classList.add('comment');
+    
+            commentElement.innerHTML = `
+                <div class="comment-detail-container">
+                    <img class="comment-avatar" src="${comment.avatar_url}" alt="User Avatar">
+                    <div class="comment-detail">
+                        <div class="comment-detail-form">
+                            <p class="comment-author">${comment.user}</p>
+                            <p>${comment.text}</p>
+                        </div>    
+                        <div class="comment-sub-detail">
+                            <p class="comment-timestamp" data-comment-created="${comment.created_at}"></p>
+                            <button class="like-comment-button" data-comment-id="${comment.id}">Like</button>
+                            <p id="like-count-comment-${comment.id}" style="font-size: 12px;">${comment.like_count}</p>
+                        </div>
+                    </div>
+                    ${comment.is_authenticated && comment.is_comment_author ? `
+                        <div class="comment-actions-dropdown">
+                            <button class="comment-actions-btn">&#x2026;</button>
+                            <div class="comment-actions-content">
+                                <a href="{% url 'edit-comment' %}?id=${comment.id}" class="comment-action">Edit</a>
+                                <a href="{% url 'delete-comment' %}?id=${comment.id}" class="comment-action">Delete</a>
+                            </div>
+                        </div>` : ''}
+                </div>
+            `;
+            container.appendChild(commentElement);
+        });
+    
+        updateCommentTimestamps();
+    }
+
+    function updateCommentTimestamps() {
+        const commentTimestamps = document.querySelectorAll('.comment-timestamp');
+    
+        commentTimestamps.forEach((timestampElement) => {
+            const createdTimestamp = new Date(timestampElement.dataset.commentCreated);
+            const currentTimestamp = new Date();
+    
+            const timeDifferenceInSeconds = Math.floor((currentTimestamp - createdTimestamp) / 1000);
+    
+            let displayText = '';
+    
+            if (timeDifferenceInSeconds < 60) {
+                displayText = `${timeDifferenceInSeconds} seconds`;
+            } else if (timeDifferenceInSeconds < 3600) {
+                const minutes = Math.floor(timeDifferenceInSeconds / 60);
+                displayText = `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+            } else if (timeDifferenceInSeconds < 86400) {
+                const hours = Math.floor(timeDifferenceInSeconds / 3600);
+                displayText = `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+            } else if (timeDifferenceInSeconds < 2592000) {
+                const days = Math.floor(timeDifferenceInSeconds / 86400);
+                displayText = `${days} ${days === 1 ? 'day' : 'days'}`;
+            } else {
+                const months = Math.floor(timeDifferenceInSeconds / 2592000);
+                displayText = `${months} ${months === 1 ? 'month' : 'months'}`;
+            }
+    
+            timestampElement.textContent = displayText;
+        });
+    }
+    
 
     function likeCommentEvent() {
         const likeCommentButtons = document.querySelectorAll('.like-comment-button');
@@ -175,6 +220,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log(error);
                 });
             });
+        });
+    }
+
+    function commentActionDropdownEvent() {
+        document.addEventListener("click", function (event) {
+            const dropdowns = document.getElementsByClassName("comment-actions-content");
+            for (const dropdown of dropdowns) {
+                if (!event.target.matches('.comment-actions-btn') && !dropdown.contains(event.target)) {
+                    dropdown.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    function commentActionButtonEvent() {
+        document.addEventListener("click", function (event) {
+            const dropdownBtns = document.getElementsByClassName("comment-actions-btn");
+            for (const dropdownBtn of dropdownBtns) {
+                const dropdown = dropdownBtn.nextElementSibling;
+                if (event.target === dropdownBtn) {
+                    dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            }
         });
     }
 });
