@@ -23,11 +23,15 @@
         {% for post in posts %}
             <div class="post-container">
                 <div class="post-header">
-                    <div>
-                        <img class="post-avatar" src="{{ post.author.avatar_url }}" alt="Author Avatar">
-                        <p class="post-author">{{ post.author }}</p>
-                        <p class="post-timestamp">{{ post.created_at }}</p>
-                    </div>
+                        <a href="{% url 'user-profile' post.author.username %}">
+                            <img class="post-avatar" src="{{ post.author.avatar_url }}" alt="Author Avatar">
+                        </a>
+                        <div>
+                            <a href="{% url 'user-profile' post.author.username %}" style="text-decoration: none;">
+                                <p class="post-author">{{ post.author }}</p>
+                            </a>
+                            <p class="post-timestamp">{{ post.created_at }}</p>
+                        </div>     
                     <hr>
                     {% if user.is_authenticated and post.author == user %}
                         <div class="post-actions-dropdown">
@@ -48,6 +52,7 @@
                         {% endif %}
                     </a>
                 </div>
+                <hr>
                 <div class="count-container">
                     <p class="post-like-count">Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
                     <p class="post-comment-count">Comments: <span id="comment-count-{{ post.pk }}">{{ post.comment_count }}</span></p>

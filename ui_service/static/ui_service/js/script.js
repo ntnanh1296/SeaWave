@@ -269,3 +269,23 @@ document.addEventListener("click", function (event) {
         }
     }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const hidePostButtons = document.querySelectorAll('.hide-post-button');
+
+    hidePostButtons.forEach((button) => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+
+            const postId = button.dataset.postId;
+            const postContainer = document.querySelector(`.post-container[data-post-id="${postId}"]`);
+
+            // Hide the post container
+            console.log('Script loaded');
+            postContainer.style.display = 'none';
+            console.log('Script loaded');
+
+            // TODO: Send an AJAX request to the server to mark the post as hidden for the current user
+        });
+    });
+});
