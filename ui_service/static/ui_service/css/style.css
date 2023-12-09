@@ -505,21 +505,3 @@ p.comment-timestamp {
     font-weight: bold; 
     margin-bottom: 5px; 
 }
-
-
-.create-comment-section {
-    display: flex;
-    align-items: flex-start;
-}
-
-.create-comment-form {
-
-    width: 92%;
-}
-
-textarea {
-    width: 100%; /* Make the textarea take up the full width */
-    box-sizing: border-box; /* Include padding and border in the width */
-    padding: 10px; /* Add some padding for better appearance */
-    border-radius: 10px;
-}

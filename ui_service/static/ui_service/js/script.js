@@ -102,24 +102,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const postId = event.target.dataset.postId;
         const commentSection = document.getElementById(`comment-section-${postId}`);
         const isCommentSectionVisible = commentSection.style.display !== 'none';
-        
-        const commentForm = document.getElementById(`create-comment-section-${postId}`);
-        
+    
         if (isCommentSectionVisible) {
             commentSection.style.display = 'none';
-            commentForm.style.display = 'none'
-
         } else {
             fetch(`/posts/${postId}/get_comments/`)
                 .then((response) => response.json())
                 .then((comments) => {
                     renderComments(comments, commentSection);
                     commentSection.style.display = 'block';
-                    commentForm.style.display = 'flex'
                     likeCommentEvent();
                     commentActionDropdownEvent();
                     commentActionButtonEvent();
-                    commentCreateActionSubmitEvent();
                 })
                 .catch((error) => {
                     console.log(error);
@@ -253,81 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    function appendCommentToDOM(comment, container) {
-        const commentElement = document.createElement('div');
-        commentElement.classList.add('comment');
-    
-        commentElement.innerHTML = `
-            <div class="comment-detail-container">
-                <img class="comment-avatar" src="${comment.avatar_url}" alt="User Avatar">
-                <div class="comment-detail">
-                    <div class="comment-detail-form">
-                        <p class="comment-author">${comment.user}</p>
-                        <p>${comment.text}</p>
-                    </div>    
-                    <div class="comment-sub-detail">
-                        <p class="comment-timestamp" data-comment-created="${comment.created_at}"></p>
-                        <button class="like-comment-button" data-comment-id="${comment.id}">Like</button>
-                        <p id="like-count-comment-${comment.id}" style="font-size: 12px;">${comment.like_count}</p>
-                    </div>
-                </div>
-                ${comment.is_authenticated && comment.is_comment_author ? `
-                    <div class="comment-actions-dropdown">
-                        <button class="comment-actions-btn">&#x2026;</button>
-                        <div class="comment-actions-content">
-                            <a href="{% url 'edit-comment' %}?id=${comment.id}" class="comment-action">Edit</a>
-                            <a href="{% url 'delete-comment' %}?id=${comment.id}" class="comment-action">Delete</a>
-                        </div>
-                    </div>` : ''}
-            </div>
-        `;
-        container.appendChild(commentElement);
-    }
-    
-
-    function commentCreateActionSubmitEvent() {
-        const createCommentBtn = document.querySelectorAll('.create-comment-class');
-    
-        if (createCommentBtn) {
-            console.log('Event listener attached');
-            createCommentBtn.addEventListener('click', function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-    
-                console.log('Button clicked');
-    
-                const post_id = createCommentBtn.dataset.postId;
-                const textCommentValue = document.getElementById('create-comment-text').value;
-    
-                console.log('Textarea Value:', textCommentValue);
-    
-                fetch(`/posts/${post_id}/comments/`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        text: textCommentValue,
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                })
-                .then(response => response.json())
-                .then(newComment => {
-                    console.log('New Comment:', newComment);
-                    const commentSection = document.getElementById(`comment-section-${newComment.post_id}`);
-                    appendCommentToDOM(newComment, commentSection);
-                })
-                .catch(error => {
-                    console.error('Error creating comment:', error);
-                });
-            });
-        }
-    }
-    
-    commentCreateActionSubmitEvent();
-    
-    
 });
 
 document.addEventListener("click", function (event) {
@@ -366,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
             postContainer.style.display = 'none';
             console.log('Script loaded');
 
+            // TODO: Send an AJAX request to the server to mark the post as hidden for the current user
         });
     });
 });
