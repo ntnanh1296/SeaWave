@@ -67,12 +67,6 @@
                 <div class="comment-section" id="comment-section-{{ post.pk }}">
                     <!-- Comments will be displayed here -->
                 </div>
-
-                <div class="create-comment-section" id="create-comment-section-{{ post.pk }}" style="display: none;">
-                    <img class="comment-avatar" src="{{ user.avatar_url }}" alt="User Avatar">
-                    <textarea id="create-comment-text" placeholder="Add your comment..." name="text" required></textarea>
-                    <button class = "create-comment-class" id="create-comment-btn" data-post-id="{{ post.pk }}" style="width: 20%;">Comment</button>
-                </div>
             </div>
         {% endfor %}
     </div>

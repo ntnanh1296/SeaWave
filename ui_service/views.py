@@ -278,17 +278,10 @@ def create_comment(request, pk):
             comment.save()
             post.comment_count += 1
             post.save()
-            comment_data = {
-                'id' : comment.id,
-                'text': comment.text,
-                'user': comment.user.username,
-                'avatar_url': comment.user.avatar_url,
-                'created_at': comment.created_at,
-                'post_id' : comment.post.id,
-            }
-            return JsonResponse(comment_data)
+            return redirect('post-detail', pk=pk)
     else:
         comment_form = CommentForm()
+    
     return render(request, 'ui_service/post_detail.html', {'post': post, 'comment_form': comment_form})
 
 @login_required
