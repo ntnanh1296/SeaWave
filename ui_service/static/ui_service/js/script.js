@@ -255,6 +255,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function appendCommentToDOM(comment, container) {
+        if (comment.error) {
+            console.error('Error creating comment:', comment.error);
+            return;
+        }
         const commentElement = document.createElement('div');
         commentElement.classList.add('comment');
     
@@ -287,45 +291,51 @@ document.addEventListener('DOMContentLoaded', function() {
     
 
     function commentCreateActionSubmitEvent() {
-        const createCommentBtn = document.querySelectorAll('.create-comment-class');
+        const createCommentBtns = document.querySelectorAll('.create-comment-class');
     
-        if (createCommentBtn) {
-            console.log('Event listener attached');
-            createCommentBtn.addEventListener('click', function (event) {
-                event.preventDefault();
-                event.stopPropagation();
+        if (createCommentBtns) {
+            createCommentBtns.forEach((createCommentBtn) => {
+                createCommentBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
     
-                console.log('Button clicked');
+                    const post_id = createCommentBtn.dataset.postId;
+                    const textCommentValue = document.getElementById(`create-comment-text-${post_id}`).value.trim();
     
-                const post_id = createCommentBtn.dataset.postId;
-                const textCommentValue = document.getElementById('create-comment-text').value;
+                    console.log('Post ID:', post_id);
+                    console.log('Comment Text Value:', textCommentValue);
     
-                console.log('Textarea Value:', textCommentValue);
+                    if (!textCommentValue) {
+                        // Handle empty comment (optional)
+                        console.log('Comment is empty. Provide a non-empty comment.');
+                        return;
+                    }
     
-                fetch(`/posts/${post_id}/comments/`, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        text: textCommentValue,
-                    }),
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                })
-                .then(response => response.json())
-                .then(newComment => {
-                    console.log('New Comment:', newComment);
-                    const commentSection = document.getElementById(`comment-section-${newComment.post_id}`);
-                    appendCommentToDOM(newComment, commentSection);
-                })
-                .catch(error => {
-                    console.error('Error creating comment:', error);
+                    const formData = new FormData();
+                    formData.append('text', textCommentValue);
+    
+                    fetch(`/posts/${post_id}/comments/`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': csrfToken,
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(newComment => {
+                        console.log('New Comment:', newComment);
+                        const commentSection = document.getElementById(`comment-section-${post_id}`);
+                        appendCommentToDOM(newComment, commentSection);
+                    })
+                    .catch(error => {
+                        console.error('Error creating comment:', error);
+                    });
                 });
             });
         }
     }
     
-    commentCreateActionSubmitEvent();
+    
     
     
 });
