@@ -120,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     commentActionDropdownEvent();
                     commentActionButtonEvent();
                     commentCreateActionSubmitEvent();
+
                 })
                 .catch((error) => {
                     console.log(error);
@@ -149,13 +150,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                     ${comment.is_authenticated && comment.is_comment_author ? `
-                        <div class="comment-actions-dropdown">
-                            <button class="comment-actions-btn">&#x2026;</button>
-                            <div class="comment-actions-content">
-                                <a href="{% url 'edit-comment' %}?id=${comment.id}" class="comment-action">Edit</a>
-                                <a href="{% url 'delete-comment' %}?id=${comment.id}" class="comment-action">Delete</a>
-                            </div>
-                        </div>` : ''}
+                    <div class="comment-actions-dropdown">
+                        <button class="comment-actions-btn">&#x2026;</button>
+                        <div class="comment-actions-content">
+                            <button class="edit-comment-button" data-comment-id="${comment.id}">Edit</button>
+                            <button class="delete-comment-button" data-comment-id="${comment.id}">Delete</button>
+                        </div>
+                    </div>` : ''}
                 </div>
             `;
             container.appendChild(commentElement);
@@ -242,18 +243,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function commentActionButtonEvent() {
         document.addEventListener("click", function (event) {
-            const dropdownBtns = document.getElementsByClassName("comment-actions-btn");
-            for (const dropdownBtn of dropdownBtns) {
+            const dropdownBtns = document.querySelectorAll(".comment-actions-btn");
+            dropdownBtns.forEach((dropdownBtn) => {
                 const dropdown = dropdownBtn.nextElementSibling;
                 if (event.target === dropdownBtn) {
-                    dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+                    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
                 } else {
-                    dropdown.style.display = 'none';
+                    dropdown.style.display = "none";
                 }
-            }
+
+                // Add event listeners for edit and delete buttons
+                const editButtons = dropdown.querySelectorAll(".edit-comment-button");
+                editButtons.forEach((editButton) => {
+                    editButton.addEventListener("click", handleEditComment);
+                });
+
+                const deleteButtons = dropdown.querySelectorAll(".delete-comment-button");
+                deleteButtons.forEach((deleteButton) => {
+                    deleteButton.addEventListener("click", handleDeleteComment);
+                });
+            });
         });
     }
 
+        // Function to handle editing a comment
+        function handleEditComment(event) {
+            event.preventDefault();
+            const commentId = event.target.dataset.commentId;
+    
+            // You can make an AJAX request to get the comment data for editing
+            fetch(`/comments/${commentId}/edit/`)
+                .then(response => response.json())
+                .then(comment => {
+                    // Handle the comment data, for example, open a modal with a form
+                    console.log(`Edit comment with ID ${commentId}`, comment);
+                })
+                .catch(error => {
+                    console.error('Error fetching comment data:', error);
+                });
+        }
+    
+        // Function to handle deleting a comment
+        function handleDeleteComment(event) {
+            event.preventDefault();
+            const commentId = event.target.dataset.commentId;
+    
+            // You can show a confirmation modal and proceed with deletion upon confirmation
+            const isConfirmed = confirm('Are you sure you want to delete this comment?');
+            if (isConfirmed) {
+                // Make an AJAX request to delete the comment
+                fetch(`/comments/${commentId}/delete/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken, // Ensure to include CSRF token if required
+                    },
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Comment deleted successfully, you can update the UI as needed
+                        console.log(`Delete comment with ID ${commentId} successful`);
+                    } else {
+                        console.error(`Error deleting comment with ID ${commentId}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting comment:', error);
+                });
+            }
+        }
     function appendCommentToDOM(comment, container) {
         if (comment.error) {
             console.error('Error creating comment:', comment.error);
@@ -276,20 +334,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p id="like-count-comment-${comment.id}" style="font-size: 12px;">${comment.like_count}</p>
                     </div>
                 </div>
-                ${comment.is_authenticated && comment.is_comment_author ? `
-                    <div class="comment-actions-dropdown">
-                        <button class="comment-actions-btn">&#x2026;</button>
-                        <div class="comment-actions-content">
-                            <a href="{% url 'edit-comment' %}?id=${comment.id}" class="comment-action">Edit</a>
-                            <a href="{% url 'delete-comment' %}?id=${comment.id}" class="comment-action">Delete</a>
-                        </div>
-                    </div>` : ''}
+                <div class="comment-actions-dropdown">
+                    <button class="comment-actions-btn">&#x2026;</button>
+                    <div class="comment-actions-content">
+                        <button class="comment-action" onclick="location.href='{% url 'edit-comment' %}?id=${comment.id}'">Edit</button>
+                        <button class="comment-action" onclick="location.href='{% url 'delete-comment' %}?id=${comment.id}'">Delete</button>
+                    </div>
+                </div>
             </div>
         `;
         container.appendChild(commentElement);
+        updateCommentTimestamps();
     }
     
-
     function commentCreateActionSubmitEvent() {
         const createCommentBtns = document.querySelectorAll('.create-comment-class');
     
@@ -306,7 +363,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('Comment Text Value:', textCommentValue);
     
                     if (!textCommentValue) {
-                        // Handle empty comment (optional)
                         console.log('Comment is empty. Provide a non-empty comment.');
                         return;
                     }
@@ -334,10 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
-    
-    
-    
+
 });
 
 document.addEventListener("click", function (event) {
