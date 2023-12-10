@@ -268,6 +268,7 @@ def get_comments(request, post_id):
 @login_required
 def create_comment(request, pk):
     post = get_object_or_404(Post, pk=pk)
+
     if request.method == 'POST':
         comment_form = CommentForm(request.POST)
         if comment_form.is_valid():
@@ -278,18 +279,21 @@ def create_comment(request, pk):
             comment.save()
             post.comment_count += 1
             post.save()
+
             comment_data = {
-                'id' : comment.id,
+                'id': comment.id,
                 'text': comment.text,
                 'user': comment.user.username,
                 'avatar_url': comment.user.avatar_url,
-                'created_at': comment.created_at,
-                'post_id' : comment.post.id,
+                'created_at': comment.created_at.isoformat(),
+                'post_id': comment.post.id,
             }
+            
             return JsonResponse(comment_data)
-    else:
-        comment_form = CommentForm()
-    return render(request, 'ui_service/post_detail.html', {'post': post, 'comment_form': comment_form})
+        
+        print(comment_form.errors.as_json())
+
+    return JsonResponse({'error': 'Invalid form data'}, status=400)
 
 @login_required
 def edit_comment(request, pk):
