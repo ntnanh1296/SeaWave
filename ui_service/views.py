@@ -299,14 +299,14 @@ def create_comment(request, pk):
 def edit_comment(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
 
-    if request.user != comment.author:
+    if request.user != comment.user:
         return HttpResponseForbidden()
 
     if request.method == 'POST':
         form = CommentForm(request.POST, instance=comment)
         if form.is_valid():
             form.save()
-            return redirect('post-detail', pk=comment.post.pk)
+            return JsonResponse({'success': True})
     else:
         form = CommentForm(instance=comment)
 
@@ -315,16 +315,22 @@ def edit_comment(request, pk):
 @login_required
 def delete_comment(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
+    print(comment)
 
-    if request.user != comment.author:
+    if request.user != comment.user:
         return HttpResponseForbidden()
 
     if request.method == 'POST':
         post_id = comment.post.id  # Get the post PK before deleting the comment
         comment.delete()
-        return redirect('home', pk=post_id)
 
-    return render(request, 'app_main/delete_comment.html', {'comment': comment})
+        # Update the comment count in the corresponding post
+        post = get_object_or_404(Post, pk=post_id)
+        post.comment_count = Comment.objects.filter(post=post).count()
+        post.save()
+        return JsonResponse({'success': True, 'post_id': post_id})
+
+    return render(request, 'ui_service/delete_comment.html', {'comment': comment})
     
 @login_required
 def like_post(request, pk):
