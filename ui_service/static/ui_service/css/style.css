@@ -443,7 +443,7 @@ body {
     margin-top: 10px;
 }
 
-.comment-detail-container-${comment.id} {
+.comment-detail-container {
     display: flex;
     align-items: flex-start;
 }

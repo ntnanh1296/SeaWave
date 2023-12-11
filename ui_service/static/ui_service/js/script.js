@@ -299,18 +299,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         'X-CSRFToken': csrfToken, // Ensure to include CSRF token if required
                     },
                 })
-                .then(response => {
+                .then(response => response.json())   // Parse the response as JSON
+                .then(data => {
                     if (data.success) {
-                        // Remove the deleted comment from the UI
+                        console.log(data);
                         const deletedComment = document.getElementById(`comment-${commentId}`);
                         if (deletedComment) {
                             deletedComment.remove();
+                        }
+                        const commentCountElement = document.getElementById(`comment-count-${data.post_id}`);
+                        if (commentCountElement) {
+                            const newCommentCount = parseInt(commentCountElement.textContent) - 1;
+                            commentCountElement.textContent = newCommentCount;
                         }
                     } else {
                         console.error('Error deleting comment:', data.error);
                     }
                 })
                 .catch(error => {
+
                     console.error('Error deleting comment:', error);
                 });
             }
@@ -385,6 +392,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('New Comment:', newComment);
                         const commentSection = document.getElementById(`comment-section-${post_id}`);
                         appendCommentToDOM(newComment, commentSection);
+                        document.getElementById(`create-comment-text-${post_id}`).value = "";
+                        const commentCountElement = document.getElementById(`comment-count-${post_id}`);
+                        if (commentCountElement) {
+                            const newCommentCount = parseInt(commentCountElement.textContent) + 1;
+                            commentCountElement.textContent = newCommentCount;
+                        }
                     })
                     .catch(error => {
                         console.error('Error creating comment:', error);

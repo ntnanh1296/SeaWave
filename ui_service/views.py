@@ -287,6 +287,7 @@ def create_comment(request, pk):
                 'avatar_url': comment.user.avatar_url,
                 'created_at': comment.created_at.isoformat(),
                 'post_id': comment.post.id,
+                'like_count' : comment.like_count,
             }
             
             return JsonResponse(comment_data)
@@ -315,7 +316,6 @@ def edit_comment(request, pk):
 @login_required
 def delete_comment(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
-    print(comment)
 
     if request.user != comment.user:
         return HttpResponseForbidden()
@@ -328,6 +328,7 @@ def delete_comment(request, pk):
         post = get_object_or_404(Post, pk=post_id)
         post.comment_count = Comment.objects.filter(post=post).count()
         post.save()
+        print(post)
         return JsonResponse({'success': True, 'post_id': post_id})
 
     return render(request, 'ui_service/delete_comment.html', {'comment': comment})
