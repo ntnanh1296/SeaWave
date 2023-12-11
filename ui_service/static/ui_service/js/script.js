@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
         comments.forEach((comment) => {
             const commentElement = document.createElement('div');
             commentElement.classList.add('comment');
-    
+            commentElement.setAttribute('id', `comment-${comment.id}`);
             commentElement.innerHTML = `
                 <div class="comment-detail-container">
                     <img class="comment-avatar" src="${comment.avatar_url}" alt="User Avatar">
@@ -300,11 +300,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                 })
                 .then(response => {
-                    if (response.ok) {
-                        // Comment deleted successfully, you can update the UI as needed
-                        console.log(`Delete comment with ID ${commentId} successful`);
+                    if (data.success) {
+                        // Remove the deleted comment from the UI
+                        const deletedComment = document.getElementById(`comment-${commentId}`);
+                        if (deletedComment) {
+                            deletedComment.remove();
+                        }
                     } else {
-                        console.error(`Error deleting comment with ID ${commentId}`);
+                        console.error('Error deleting comment:', data.error);
                     }
                 })
                 .catch(error => {
