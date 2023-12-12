@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="comment-detail">
                         <div class="comment-detail-form">
                             <p class="comment-author">${comment.user}</p>
-                            <p>${comment.text}</p>
+                            <p class="comment-text-${comment.id}">${comment.text}</p>
                         </div>    
                         <div class="comment-sub-detail">
                             <p class="comment-timestamp" data-comment-created="${comment.created_at}"></p>
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="comment-actions-dropdown">
                         <button class="comment-actions-btn">&#x2026;</button>
                         <div class="comment-actions-content">
-                            <button class="edit-comment-button" data-comment-id="${comment.id}">Edit</button>
+                            <button class="edit-comment-button" data-post-id="${comment.post_id}" data-comment-id="${comment.id}">Edit</button>
                             <button class="delete-comment-button" data-comment-id="${comment.id}">Delete</button>
                         </div>
                     </div>` : ''}
@@ -266,23 +266,106 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-        // Function to handle editing a comment
-        function handleEditComment(event) {
-            event.preventDefault();
-            const commentId = event.target.dataset.commentId;
+    // Function to handle editing a comment
+    function handleEditComment(event) {
+        event.preventDefault();
     
-            // You can make an AJAX request to get the comment data for editing
-            fetch(`/comments/${commentId}/edit/`)
-                .then(response => response.json())
-                .then(comment => {
-                    // Handle the comment data, for example, open a modal with a form
-                    console.log(`Edit comment with ID ${commentId}`, comment);
-                })
-                .catch(error => {
-                    console.error('Error fetching comment data:', error);
-                });
-        }
+        const commentId = event.target.dataset.commentId;
     
+        // Fetch the comment data from the server
+        fetch(`/comments/${commentId}/`)
+            .then(response => response.json())
+            .then(commentData => {
+                console.log(commentData);
+                // Create a textarea for editing the comment
+                const textarea = document.createElement('textarea');
+                textarea.value = commentData.text;
+                textarea.classList.add('edit-comment-textarea');
+    
+                // Create a save button
+                const saveButton = document.createElement('button');
+                saveButton.textContent = 'Save';
+                saveButton.classList.add('save-comment-button');
+                saveButton.dataset.commentId = commentId;
+    
+                // Create a container to hold the textarea and save button
+                const editContainer = document.createElement('div');
+                editContainer.appendChild(textarea);
+                editContainer.appendChild(saveButton);
+    
+                // Replace the comment content with the edit container
+                const commentContainer = document.getElementById(`comment-${commentId}`);
+                commentContainer.innerHTML = '';
+                commentContainer.appendChild(editContainer);
+    
+                // Attach an event listener to the save button
+                saveButton.addEventListener('click', handleSaveComment);
+            })
+            .catch(error => {
+                console.error('Error fetching comment data:', error);
+            });
+    }
+    
+            
+    function handleSaveComment(event) {
+        event.preventDefault();
+    
+        const commentId = event.target.dataset.commentId;
+        const editedText = document.querySelector(`#comment-${commentId} .edit-comment-textarea`).value;
+        console.log(editedText)
+        
+        const formData = new FormData();
+        formData.append('text', editedText);
+        console.log(formData)
+        // Make an AJAX request to save the edited comment
+        fetch(`/comments/${commentId}/edit/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const commentContainer = document.getElementById(`comment-${commentId}`);
+                commentContainer.innerHTML = `
+                <div class="comment-detail-container">
+                    <img class="comment-avatar" src="${data.comment.avatar_url}" alt="User Avatar">
+                    <div class="comment-detail">
+                        <div class="comment-detail-form">
+                            <p class="comment-author">${data.comment.user}</p>
+                            <p>${data.comment.text}</p>
+                        </div>    
+                        <div class="comment-sub-detail">
+                            <p class="comment-timestamp" data-comment-created="${data.comment.created_at}"></p>
+                            <button class="like-comment-button" data-comment-id="${data.comment.id}">Like</button>
+                            <p id="like-count-comment-${data.comment.id}" style="font-size: 12px;">${data.comment.like_count}</p>
+                        </div>
+                    </div>
+                    <div class="comment-actions-dropdown">
+                        <button class="comment-actions-btn">&#x2026;</button>
+                        <div class="comment-actions-content">
+                            <button class="edit-comment-button" data-comment-id="${commentId}">Edit</button>
+                            <button class="delete-comment-button" data-comment-id="${data.comment.id}">Delete</button>
+                        </div>
+                    </div>`; 
+                
+                updateCommentTimestamps();
+                
+                // likeCommentEvent();
+                // commentActionDropdownEvent();
+                // commentActionButtonEvent();
+
+            } else {
+                console.error('Error saving edited comment:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving edited comment:', error);
+        });
+    }
+
         // Function to handle deleting a comment
         function handleDeleteComment(event) {
             event.preventDefault();
@@ -322,6 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
+        
     function appendCommentToDOM(comment, container) {
         if (comment.error) {
             console.error('Error creating comment:', comment.error);
@@ -347,8 +431,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="comment-actions-dropdown">
                     <button class="comment-actions-btn">&#x2026;</button>
                     <div class="comment-actions-content">
-                        <button class="comment-action" onclick="location.href='{% url 'edit-comment' %}?id=${comment.id}'">Edit</button>
-                        <button class="comment-action" onclick="location.href='{% url 'delete-comment' %}?id=${comment.id}'">Delete</button>
+                        <button class="edit-comment-button" data-post-id="${comment.post_id}" data-comment-id="${comment.id}">Edit</button>
+                        <button class="delete-comment-button" data-comment-id="${comment.id}">Delete</button>
                     </div>
                 </div>
             </div>
