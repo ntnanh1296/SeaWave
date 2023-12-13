@@ -3,8 +3,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
-default_avatar = '../media/avatar.png'
-default_photo_cover = '../media/photo_cover.png'
+default_avatar = 'https://firebasestorage.googleapis.com/v0/b/seawave-d58e4.appspot.com/o/avatar%2Favatar.png?alt=media&token=d042bdf1-e683-4ebc-8d74-1bc8a4fa27a8'
+default_photo_cover = 'https://firebasestorage.googleapis.com/v0/b/seawave-d58e4.appspot.com/o/cover_photo%2Fphoto_cover.png?alt=media&token=1d034dad-bd80-47e0-8e2a-2e7537bded38'
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
