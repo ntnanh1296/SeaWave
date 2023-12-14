@@ -1,0 +1,57 @@
+<!-- test_chat.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test</title>
+</head>
+<body>
+    <div>
+        <h2>Chat Room</h2>
+        <div id="chat-output"></div>
+        <input type="text" id="message-input" placeholder="Type your message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        const chatOutput = document.getElementById('chat-output');
+        const messageInput = document.getElementById('message-input');
+
+        const socket = new WebSocket('ws://localhost:8000/ws/chat/1/'); // Replace with your actual domain
+
+        // Connection opened
+        socket.addEventListener('open', (event) => {
+            console.log('WebSocket connection opened:', event);
+        });
+
+        // Listen for messages
+        socket.addEventListener('message', (event) => {
+            const message = JSON.parse(event.data);
+            displayMessage(message.message);
+        });
+
+        // Connection closed
+        socket.addEventListener('close', (event) => {
+            console.log('WebSocket connection closed:', event);
+        });
+
+        // Send a message to the WebSocket
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message !== '') {
+                socket.send(JSON.stringify({ message }));
+                messageInput.value = '';
+            }
+        }
+
+        // Display a received message in the chat output
+        function displayMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            chatOutput.appendChild(messageElement);
+        }
+    </script>
+</body>
+</html>

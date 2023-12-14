@@ -11,12 +11,15 @@ from .forms import PostForm, CommentForm, UserProfileForm
 from post_service.models import Post, Comment, PostLike, CommentLike
 from post_service.serializers import PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
 from user_service.models import CustomUser
+from chat_service.models import Chat, Message
+from chat_service.serializers import ChatSerializer, MessageSerializer
 from rest_framework import viewsets
 from django.views import View
 from django.views.generic.edit import FormMixin
 from django.views.generic import ListView
 from django.urls import reverse_lazy
 from follow_service.models import Follower
+from django.views.generic import TemplateView
 
 cred = credentials.Certificate('firebase_credentials.json')
 try:
@@ -82,6 +85,14 @@ class UserProfileView(View):
             'posts' : posts
         }
         return render(request, 'ui_service/user_profile.html', context)
+
+class ChatViewSet(viewsets.ModelViewSet):
+    queryset = Chat.objects.all()
+    serializer_class = ChatSerializer
+
+class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
 
 @login_required
 def user_detail(request, username):
@@ -418,6 +429,10 @@ def update_profile(request, username):
         profile_form = UserProfileForm(instance=user)
 
     return render(request, 'ui_service/update_profile.html', {'profile_form': profile_form, 'user': user})
+
+
+def test_chat(request):
+    return render(request, 'ui_service/chat.html')
 
 def home(request):
     if request.method == 'POST':
