@@ -66,7 +66,18 @@ Manages user connections, followers, and following relationships.
 
     Database: PostgreSQL for managing user connections.
 
-4. Notification Service (Django App):
+4. Chat Service (Django App):
+Manages user chat one to one or group chat
+    API Endpoints:
+    /api/chat/one-to-one/{userId}: 
+        POST: Initiates a one-to-one chat.
+    /api/chat/group/{groupId}: 
+        POST: Initiates or retrieves a group chat.
+    /api/chat/send-message: 
+        POST: Sends a message to a user or group.
+    /api/chat/messages/{chatId}: Retrieves chat history for a user or group.
+
+5. Notification Service (Django App):
 
     Handles real-time notifications for activities such as likes, comments, and follows.
 
@@ -74,7 +85,7 @@ Manages user connections, followers, and following relationships.
 
     Define WebSocket or long-polling endpoints for real-time notifications.
 
-5. Redis Service:
+6. Redis Service:
 
 Responsible for storing and retrieving mappings:
 User ID to Post IDs (user_posts:{userId}).

@@ -22,6 +22,7 @@ urlpatterns = [
     path('users/<str:username>/update/', views.update_profile, name='update-profile'),
     path('posts/<int:post_id>/share/', views.share_post, name='share-post'),
     path('posts/<int:post_id>/get_comments/', views.get_comments, name='get-comments'),
+    path('test_chat/', views.test_chat, name='test_chat'),
 ]
 
 #

@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('user_service.urls')),
     path('', include('post_service.urls')),
     path('', include('ui_service.urls')),
+    path('', include('chat_service.urls')),
     # Add other app URLs as needed
 ]
 
