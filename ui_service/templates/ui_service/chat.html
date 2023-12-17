@@ -1,57 +1,85 @@
-<!-- test_chat.html -->
+<!-- ui_service/templates/ui_service/chat.html -->
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Test</title>
-</head>
-<body>
-    <div>
-        <h2>Chat Room</h2>
-        <div id="chat-output"></div>
-        <input type="text" id="message-input" placeholder="Type your message">
-        <button onclick="sendMessage()">Send</button>
+{% extends 'ui_service/base.html' %}
+
+{% block content %}
+    <div id="chatContainer">
+        <div id="messageArea" class="message-area"></div>
+        <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Type your message...">
+            <button id="sendButton">Send</button>
+        </div>
     </div>
 
     <script>
-        const chatOutput = document.getElementById('chat-output');
-        const messageInput = document.getElementById('message-input');
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the recipient ID and recipient username from the template context
+            const recipientId = parseInt('{{ recipient_id }}');
+            const recipientUsername = '{{ recipient_username }}';
 
-        const socket = new WebSocket('ws://localhost:8000/ws/chat/1/'); // Replace with your actual domain
+            const chatContainer = document.getElementById('chatContainer');
+            const messageArea = document.getElementById('messageArea');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
 
-        // Connection opened
-        socket.addEventListener('open', (event) => {
-            console.log('WebSocket connection opened:', event);
-        });
+            // Simulate a WebSocket connection
+            const socket = new WebSocket(`ws://${window.location.host}/ws/chat/${recipientId}/`);
 
-        // Listen for messages
-        socket.addEventListener('message', (event) => {
-            const message = JSON.parse(event.data);
-            displayMessage(message.message);
-        });
+            // WebSocket event listeners
+            socket.onopen = function (event) {
+                console.log('WebSocket connection opened:', event);
+            };
 
-        // Connection closed
-        socket.addEventListener('close', (event) => {
-            console.log('WebSocket connection closed:', event);
-        });
+            socket.onmessage = function (event) {
+                // Handle incoming messages
+                const message = JSON.parse(event.data);
+                appendMessage(message.sender, message.text, message.sender === recipientUsername);
+            };
 
-        // Send a message to the WebSocket
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            if (message !== '') {
-                socket.send(JSON.stringify({ message }));
-                messageInput.value = '';
+            socket.onclose = function (event) {
+                console.log('WebSocket connection closed:', event);
+            };
+
+            // Event listener for the Send button
+            sendButton.addEventListener('click', function () {
+                const messageText = messageInput.value;
+
+                if (messageText.trim() !== '') {
+                    // Send the message to the WebSocket server
+                    const message = {
+                        sender: '{{ user.username }}',  // Sender's username
+                        recipient: recipientId,
+                        text: messageText,
+                    };
+
+                    socket.send(JSON.stringify(message));
+
+                    // Append the sent message to the chat area
+                    appendMessage(message.sender, message.text, true);
+
+                    // Clear the input field
+                    messageInput.value = '';
+                }
+            });
+
+            // Function to append messages to the message area
+            function appendMessage(sender, text, isSentByRecipient) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+
+                if (isSentByRecipient) {
+                    messageElement.classList.add('received');
+                    messageElement.innerHTML = `<strong>${sender} (Recipient):</strong> ${text}`;
+                } else {
+                    messageElement.classList.add('sent');
+                    messageElement.innerHTML = `<strong>${sender} (Sender):</strong> ${text}`;
+                }
+
+                messageArea.appendChild(messageElement);
+
+                // Scroll to the bottom to show the latest messages
+                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
-        }
-
-        // Display a received message in the chat output
-        function displayMessage(message) {
-            const messageElement = document.createElement('div');
-            messageElement.textContent = message;
-            chatOutput.appendChild(messageElement);
-        }
+        });
     </script>
-</body>
-</html>
+{% endblock %}

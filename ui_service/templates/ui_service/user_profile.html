@@ -22,6 +22,7 @@
         </div>
     </div>
     {% if user != request.user %}
+        <button id="messageButton" data-recipient-id="{{ user.id }}">Message</button>
         {% if is_following %}
             <form method="post" action="{% url 'follow-unfollow-user' user.username %}">
                 {% csrf_token %}
@@ -114,6 +115,23 @@
     </div>
     <script>
         const csrfToken = "{{ csrf_token }}";
+        document.addEventListener("DOMContentLoaded", function () {
+                const messageButton = document.getElementById("messageButton");
+    
+                if (messageButton) {
+                    messageButton.addEventListener("click", function (event) {
+                        event.preventDefault();
+    
+                        const recipientId = event.target.dataset.recipientId;
+                        // You can redirect the user to the chat page or implement your chat logic here
+                        window.location.href = `/chat/${recipientId}/`;
+    
+                        // For now, let's log the recipient ID
+                        console.log(`Open chat with user ID: ${recipientId}`);
+                    });
+                }
+            });
     </script>
+
     {% endif %}
 {% endblock %}

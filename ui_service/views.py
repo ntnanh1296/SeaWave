@@ -11,8 +11,6 @@ from .forms import PostForm, CommentForm, UserProfileForm
 from post_service.models import Post, Comment, PostLike, CommentLike
 from post_service.serializers import PostSerializer, CommentSerializer, PostLikeSerializer, CommentLikeSerializer
 from user_service.models import CustomUser
-from chat_service.models import Chat, Message
-from chat_service.serializers import ChatSerializer, MessageSerializer
 from rest_framework import viewsets
 from django.views import View
 from django.views.generic.edit import FormMixin
@@ -20,6 +18,7 @@ from django.views.generic import ListView
 from django.urls import reverse_lazy
 from follow_service.models import Follower
 from django.views.generic import TemplateView
+from chat_service.models import Chat
 
 cred = credentials.Certificate('firebase_credentials.json')
 try:
@@ -35,7 +34,6 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
 
 
-class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -86,13 +84,8 @@ class UserProfileView(View):
         }
         return render(request, 'ui_service/user_profile.html', context)
 
-class ChatViewSet(viewsets.ModelViewSet):
-    queryset = Chat.objects.all()
-    serializer_class = ChatSerializer
 
-class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
-    serializer_class = MessageSerializer
+
 
 @login_required
 def user_detail(request, username):
@@ -100,7 +93,7 @@ def user_detail(request, username):
     posts = Post.objects.filter(author=user).order_by('-created_at')
     follower_count = user.followers.count()
     is_following = user.followers.filter(follower=request.user).exists()
-
+    
     update_profile_form = UserProfileForm(instance=user)
 
     if request.method == 'POST':
@@ -119,6 +112,10 @@ def user_detail(request, username):
     
     return render(request, 'ui_service/user_profile.html', context)
 
+def chat_page(request, user_id):
+    user = get_object_or_404(CustomUser, id=user_id)
+    chats = Chat.objects.filter(sender=request.user, receiver=user) | Chat.objects.filter(sender=user, receiver=request.user)
+    return render(request, 'ui_service/chat.html', {'user': user, 'chats': chats})
 
 class PostDetailView(View):
     def get(self, request, pk):
@@ -431,8 +428,18 @@ def update_profile(request, username):
     return render(request, 'ui_service/update_profile.html', {'profile_form': profile_form, 'user': user})
 
 
-def test_chat(request):
-    return render(request, 'ui_service/chat.html')
+class ChatView(View):
+    template_name = 'ui_service/chat.html'
+
+    def get(self, request, recipient_id):
+        # Pass recipient_id to the context to use in the template
+        context = {'recipient_id': recipient_id}
+        return render(request, self.template_name, context)
+
+@login_required
+def chat(request, user_id):
+    receiver = CustomUser.objects.get(id=user_id)
+    return render(request, 'ui_service/chat.html', {'receiver': receiver})
 
 def home(request):
     if request.method == 'POST':
