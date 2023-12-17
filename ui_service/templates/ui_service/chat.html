@@ -29,12 +29,23 @@
 
     // WebSocket event listeners
     socket.onopen = function (event) {
-        console.log('WebSocket connection opened:', event);
-    };
+            console.log('WebSocket connection opened:', event);
+
+            // Request chat history from the server
+            socket.send(JSON.stringify({
+                'type': 'get.chat_history',
+            }));
+        };
 
     socket.onmessage = function (event) {
-        const message = JSON.parse(event.data);
-        appendMessage(message.sender, message.message, message.sender === recipientUsername);
+            const message = JSON.parse(event.data);
+        if (message.type === 'chat.message') {
+            appendMessage(message.sender, message.message, message.sender === recipientUsername);
+        } else if (message.type === 'chat.history') {
+            for (const historyMessage of message.history) {
+                appendMessage(historyMessage.sender, historyMessage.message, historyMessage.sender === recipientUsername);
+            }
+        }
     };
 
     socket.onclose = function (event) {
@@ -61,20 +72,15 @@
     });
 
     function appendMessage(sender, text, isSentByRecipient) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
 
-        if (isSentByRecipient) {
-            messageElement.classList.add('received');
-            messageElement.innerHTML = `<strong>${sender} (Recipient):</strong> ${text}`;
-        } else {
             messageElement.classList.add('sent');
             messageElement.innerHTML = `<strong>${sender} (Sender):</strong> ${text}`;
-        }
 
-        messageArea.appendChild(messageElement);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
+            messageArea.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 });
     </script>
 {% endblock %}

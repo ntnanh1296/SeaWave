@@ -18,7 +18,7 @@ from django.views.generic import ListView
 from django.urls import reverse_lazy
 from follow_service.models import Follower
 from django.views.generic import TemplateView
-from chat_service.models import Chat
+from chat_service.models import ChatMessage
 
 cred = credentials.Certificate('firebase_credentials.json')
 try:
@@ -84,9 +84,6 @@ class UserProfileView(View):
         }
         return render(request, 'ui_service/user_profile.html', context)
 
-
-
-
 @login_required
 def user_detail(request, username):
     user = CustomUser.objects.get(username=username)
@@ -111,11 +108,6 @@ def user_detail(request, username):
     }
     
     return render(request, 'ui_service/user_profile.html', context)
-
-def chat_page(request, user_id):
-    user = get_object_or_404(CustomUser, id=user_id)
-    chats = Chat.objects.filter(sender=request.user, receiver=user) | Chat.objects.filter(sender=user, receiver=request.user)
-    return render(request, 'ui_service/chat.html', {'user': user, 'chats': chats})
 
 class PostDetailView(View):
     def get(self, request, pk):
@@ -432,14 +424,8 @@ class ChatView(View):
     template_name = 'ui_service/chat.html'
 
     def get(self, request, recipient_id, sender_id):
-        # Pass recipient_id to the context to use in the template
         context = {'recipient_id': recipient_id, 'sender_id': sender_id}
         return render(request, self.template_name, context)
-
-@login_required
-def chat(request, user_id):
-    receiver = CustomUser.objects.get(id=user_id)
-    return render(request, 'ui_service/chat.html', {'receiver': receiver})
 
 def home(request):
     if request.method == 'POST':
