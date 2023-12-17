@@ -33,7 +33,7 @@
             socket.onmessage = function (event) {
                 // Handle incoming messages
                 const message = JSON.parse(event.data);
-                appendMessage(message.sender, message.text, message.sender === recipientUsername);
+                appendMessage(message.sender, message.message, message.sender === recipientUsername);
             };
 
             socket.onclose = function (event) {
@@ -49,13 +49,13 @@
                     const message = {
                         sender: '{{ user.username }}',  // Sender's username
                         recipient: recipientId,
-                        text: messageText,
+                        message: messageText,
                     };
 
                     socket.send(JSON.stringify(message));
 
                     // Append the sent message to the chat area
-                    appendMessage(message.sender, message.text, true);
+                    // appendMessage(message.sender, message.message, message.sender === recipientUsername);
 
                     // Clear the input field
                     messageInput.value = '';
@@ -67,13 +67,9 @@
                 const messageElement = document.createElement('div');
                 messageElement.classList.add('message');
 
-                if (isSentByRecipient) {
-                    messageElement.classList.add('received');
-                    messageElement.innerHTML = `<strong>${sender} (Recipient):</strong> ${text}`;
-                } else {
                     messageElement.classList.add('sent');
                     messageElement.innerHTML = `<strong>${sender} (Sender):</strong> ${text}`;
-                }
+
 
                 messageArea.appendChild(messageElement);
 
