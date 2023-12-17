@@ -431,9 +431,9 @@ def update_profile(request, username):
 class ChatView(View):
     template_name = 'ui_service/chat.html'
 
-    def get(self, request, recipient_id):
+    def get(self, request, recipient_id, sender_id):
         # Pass recipient_id to the context to use in the template
-        context = {'recipient_id': recipient_id}
+        context = {'recipient_id': recipient_id, 'sender_id': sender_id}
         return render(request, self.template_name, context)
 
 @login_required

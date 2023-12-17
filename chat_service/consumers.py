@@ -4,10 +4,15 @@ from channels.generic.websocket import WebsocketConsumer
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs'].get('room_name')  # Use get to avoid KeyError
-        self.room_group_name = f"chat_{self.room_name}"
+        # Extract user IDs from the URL route
+        recipient_id = self.scope['url_route']['kwargs'].get('recipient_id')
+        current_user_id = self.scope['url_route']['kwargs'].get('sender_id')
 
-        if self.room_name:
+        # Ensure a consistent room identifier based on user IDs
+        room_identifier = '_'.join(sorted([str(current_user_id), str(recipient_id)]))
+        self.room_group_name = f"chat_{room_identifier}"
+
+        if room_identifier:
             # Join room group
             async_to_sync(self.channel_layer.group_add)(
                 self.room_group_name,
@@ -16,10 +21,10 @@ class ChatConsumer(WebsocketConsumer):
 
             self.accept()
         else:
-            print("WebSocket connection rejected: Room name not provided")
+            print("WebSocket connection rejected: Recipient ID not provided")
 
     def disconnect(self, close_code):
-        if self.room_name:
+        if self.room_identifier:
             # Leave room group
             async_to_sync(self.channel_layer.group_discard)(
                 self.room_group_name,
