@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'user_service',
     'post_service',
     'follow_service',
-     
     'channels',
     'ui_service',
     'chat_service',
