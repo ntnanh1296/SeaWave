@@ -129,6 +129,13 @@ class PostDetailView(View):
 
         comments = post.comments.all()
         return render(request, 'ui_service/post-post_detail.html', {'post': post, 'comment_form': comment_form, 'comments': comments})
+    
+
+class CommentDetailView(View):
+    def get(self, request, pk):
+        comment = get_object_or_404(Comment, pk=pk)
+        text = comment.text
+        return JsonResponse({'text': text})
 
 def register(request):
     if request.method == 'POST':
@@ -287,6 +294,7 @@ def create_comment(request, pk):
                 'avatar_url': comment.user.avatar_url,
                 'created_at': comment.created_at.isoformat(),
                 'post_id': comment.post.id,
+                'like_count' : comment.like_count,
             }
             
             return JsonResponse(comment_data)
@@ -294,6 +302,7 @@ def create_comment(request, pk):
         print(comment_form.errors.as_json())
 
     return JsonResponse({'error': 'Invalid form data'}, status=400)
+
 
 @login_required
 def edit_comment(request, pk):
@@ -306,16 +315,32 @@ def edit_comment(request, pk):
         form = CommentForm(request.POST, instance=comment)
         if form.is_valid():
             form.save()
-            return JsonResponse({'success': True})
-    else:
-        form = CommentForm(instance=comment)
+            
+            # Reload the comment to get the updated content
+            updated_comment = Comment.objects.get(pk=comment.pk)
+            
+            # Return JSON response with the updated comment data
+            comment_data = {
+                'id': updated_comment.id,
+                'text': updated_comment.text,
+                'user': updated_comment.user.username,
+                'avatar_url': updated_comment.user.avatar_url,
+                'created_at': updated_comment.created_at.isoformat(),
+                'post_id': updated_comment.post.id,
+                'like_count' : updated_comment.like_count,
+            }
 
-    return render(request, 'ui_service/edit_comment.html', {'form': form, 'comment': comment})
+            return JsonResponse({'success': True, 'comment': comment_data})
+        else:
+            print(form.errors.as_json())  # Add this line to log form errors
+    else:
+        print('Invalid request method')  # Add this line to log invalid request method
+
+    return JsonResponse({'success': False, 'error': 'Invalid form data'}, status=400)
 
 @login_required
 def delete_comment(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
-    print(comment)
 
     if request.user != comment.user:
         return HttpResponseForbidden()
@@ -328,6 +353,7 @@ def delete_comment(request, pk):
         post = get_object_or_404(Post, pk=post_id)
         post.comment_count = Comment.objects.filter(post=post).count()
         post.save()
+        print(post)
         return JsonResponse({'success': True, 'post_id': post_id})
 
     return render(request, 'ui_service/delete_comment.html', {'comment': comment})

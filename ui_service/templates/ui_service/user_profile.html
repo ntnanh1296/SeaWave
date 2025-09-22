@@ -19,26 +19,6 @@
             <div class="user-joined">Joined: {{ user.created_at }}</div>
             <div class="user-followers">Followers: {{ follower_count }}</div>
             <div class="user-bio">Bio: {{ user.bio }}</div>
-
-            <!-- {% if user == request.user %}
-                <div class="update-profile-container">
-                    <h3>Update Profile</h3>
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{ update_profile_form.as_p }}
-                        <input type="submit" value="Update Profile">
-                    </form>
-                    <script>
-                        document.getElementById("id_avatar").addEventListener("click", function() {
-                            document.getElementById("id_avatar").click();
-                        });
-
-                        document.getElementById("id_cover_photo").addEventListener("click", function() {
-                            document.getElementById("id_cover_photo").click();
-                        });
-                    </script>
-                </div>
-            {% endif %} -->
         </div>
     </div>
     {% if user != request.user %}
@@ -56,31 +36,37 @@
     {% endif %}
 
     <div class="container">
-        {% if user == request.user %}
-            <div class="post-creation-container">
-                <form class="create-post-form" method="post" action="{% url 'create-post' %}" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <p>
-                        <label for="post_text">Create New Post:</label>
-                        <textarea id="post_text" name="text" id="id_text" required></textarea>
-                    </p>
-                    <p>
-                        <label for="id_media">Media:</label>
-                        <input type="file" name="media" id="id_media">
-                    </p>
-                    <div id="media-preview"></div>
-                    <input type="submit" value="Create Post">
-                </form>
-            </div>
+        {% if user.is_authenticated %}
+        <div class="post-creation-container">
+            <form class="create-post-form" method="post" action="{% url 'create-post' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <p>
+                    <label for="post_text">Create New Post:</label>
+                    <textarea id="post_text" name="text" id="id_text" required></textarea>
+                </p>
+                <p>
+                    <label for="id_media">Media:</label>
+                    <input type="file" name="media" id="id_media">
+                </p>
+                <div id="media-preview"></div>
+                <input type="submit" value="Create Post">
+            </form>
+        </div>
         {% endif %}
 
         {% for post in posts %}
             <div class="post-container">
                 <div class="post-header">
-                    <div>
-                        <p class="post-author">{{ post.author }}</p>
-                        <p class="post-timestamp">{{ post.created_at }}</p>
-                    </div>
+                        <a href="{% url 'user-profile' post.author.username %}">
+                            <img class="post-avatar" src="{{ user.avatar.url }}" alt="Author Avatar">
+                        </a>
+                        <div>
+                            <a href="{% url 'user-profile' post.author.username %}" style="text-decoration: none;">
+                                <p class="post-author">{{ post.author }}</p>
+                            </a>
+                            <p class="post-timestamp">{{ post.created_at }}</p>
+                        </div>     
+                    <hr>
                     {% if user.is_authenticated and post.author == user %}
                         <div class="post-actions-dropdown">
                             <button class="post-actions-btn">&#x2026;</button>
@@ -100,6 +86,7 @@
                         {% endif %}
                     </a>
                 </div>
+                <hr>
                 <div class="count-container">
                     <p class="post-like-count">Likes: <span id="like-count-{{ post.pk }}">{{ post.like_count }}</span></p>
                     <p class="post-comment-count">Comments: <span id="comment-count-{{ post.pk }}">{{ post.comment_count }}</span></p>
@@ -111,8 +98,19 @@
                     <button class="comment-button" data-post-id="{{ post.pk }}">Comment</button>
                     <button class="share-button" data-post-id="{{ post.pk }}">Share</button>
                 </div>
+                <div class="comment-section" id="comment-section-{{ post.pk }}">
+                    <!-- Comments will be displayed here -->
+                </div>
+
+                <div class="create-comment-section" id="create-comment-section-{{ post.pk }}" style="display: none;">
+                    <img class="comment-avatar" src="{{ user.avatar_url }}" alt="User Avatar">
+                    <textarea id="create-comment-text-{{ post.pk }}" placeholder="Add your comment..." name="text" required></textarea>
+                    <button class="create-comment-class" data-post-id="{{ post.pk }}" style="width: 20%;">Comment</button>
+                </div>
             </div>
         {% endfor %}
+    </div>
+
     </div>
     <script>
         const csrfToken = "{{ csrf_token }}";
